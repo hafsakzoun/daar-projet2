@@ -1,0 +1,6 @@
+#!/Users/hafsaakzoun/Projects/Projet2_FASTApi_React/backend/.venv/bin/python3
+import sys
+from detect_installer._test import main
+if __name__ == '__main__':
+    sys.argv[0] = sys.argv[0].removesuffix('.exe')
+    sys.exit(main())
