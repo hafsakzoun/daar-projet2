@@ -1,0 +1,22 @@
+# Python
+backend/.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# React
+frontend/node_modules/
+frontend/dist/
+
+# Variables locales et secrets
+.env
+.env.*
+!.env.example
+
+# Données volumineuses et fichiers générés
+data/raw/
+data/processed/
+data/generated/
+
+# macOS
+.DS_Store
