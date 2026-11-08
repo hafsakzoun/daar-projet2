@@ -54,7 +54,7 @@ services:
     build:
       context: ./backend
     ports:
-      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
     environment:
       <<: *db_environment
     volumes:
@@ -79,7 +79,7 @@ services:
     build:
       context: ./frontend
     ports:
-      - "127.0.0.1:5173:5173"
+      - "127.0.0.1:${FRONTEND_PORT:-5173}:5173"
     networks:
       - app_net
     depends_on:
