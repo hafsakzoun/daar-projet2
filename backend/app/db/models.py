@@ -1,7 +1,7 @@
 
 from sqlalchemy import CheckConstraint, ForeignKey, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-
+from sqlalchemy import Index
 
 class Base(DeclarativeBase):
     pass
@@ -48,5 +48,5 @@ class Posting(Base):
     __table_args__ = (
         CheckConstraint("frequency > 0"),
     )
-
+Index("ix_postings_term_id", Posting.term_id)
   
