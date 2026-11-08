@@ -1,3 +1,17 @@
+<svg
+  width="17"
+  height="17"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  strokeWidth="1.6"
+  strokeLinecap="round"
+  aria-hidden="true"
+>
+  <circle cx="12" cy="8" r="3" />
+  <path d="M5 20v-1a7 7 0 0 1 14 0v1" />
+</svg>
+
 import { useEffect, useRef, useState } from 'react'
 
 function AuthDialog({ initialMode, onClose }) {

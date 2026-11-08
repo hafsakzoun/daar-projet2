@@ -141,10 +141,27 @@ function App() {
 
   return (
     <main className="library">
-      <header>
-        <p className="eyebrow">DAAR · Sorbonne Université</p>
-        <h1>Bibliothèque DAAR</h1>
-        <p>Explore les livres du corpus par mot-clé ou expression régulière.</p>
+      <header className="library-hero">
+        <div className="hero-content">
+          <svg
+            className="brand-mark"
+            width="26"
+            height="26"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 6a7 7 0 0 0-8-1v13a7 7 0 0 1 8 1 7 7 0 0 1 8-1V5a7 7 0 0 0-8 1Z" />
+            <path d="M12 6v13" />
+          </svg>
+
+          <h1>Lisière</h1>
+          <p>Un mot suffit pour ouvrir un livre.</p>
+        </div>
       </header>
 
       <form className="search" onSubmit={submit}>
@@ -188,7 +205,22 @@ function App() {
             aria-describedby="search-hint"
           />
 
-          <button type="submit">Rechercher</button>
+          <button type="submit" className="search-submit">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
+              <circle cx="10.5" cy="10.5" r="5.5" />
+              <path d="m15 15 4 4" />
+            </svg>
+            Rechercher
+          </button>
         </div>
 
         <p id="search-hint" className="hint">
