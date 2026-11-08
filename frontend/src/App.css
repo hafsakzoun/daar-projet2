@@ -553,3 +553,101 @@
   color: var(--night-accent, #c4c7ff);
   font-weight: 600;
 }
+
+.activity-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.activity-section {
+  padding: 12px 16px;
+  border: 1px solid var(--night-border);
+  border-radius: 16px;
+  background: var(--night-field);
+}
+
+.activity-section summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.activity-section p,
+.activity-list small {
+  color: var(--night-muted);
+}
+
+.activity-list {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.activity-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--night-border);
+  overflow-wrap: anywhere;
+}
+
+.activity-list small {
+  display: block;
+}
+
+.library .favorite-toggle {
+  display: inline-grid;
+  place-items: center;
+  min-width: 44px;
+  margin: 6px 4px 0 0;
+  padding: 0 10px;
+  background: var(--night-field);
+  color: var(--night-accent);
+  font-size: 1.25rem;
+}
+
+.library .favorite-toggle[aria-pressed="true"] {
+  color: #ffd382;
+}
+
+.library-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin-bottom: 20px;
+}
+
+.library-toolbar .account-actions {
+  margin: 0 0 0 auto;
+}
+
+.activity-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.library .activity-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--night-muted);
+  background: var(--night-field);
+}
+
+.library .activity-actions button[aria-expanded="true"] {
+  color: var(--night-accent);
+  background: #343d5c;
+}
+
+.library-toolbar + .activity-panel {
+  margin: 0 0 20px;
+}
+
+.activity-section h2 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
