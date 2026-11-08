@@ -35,6 +35,21 @@ services:
     command: ["python", "-m", "app.services.auto_install"]
     restart: "no"
 
+  index-init:
+    build:
+      context: ./backend
+    environment:
+      <<: *db_environment
+    volumes:
+      - corpus:/data
+    networks:
+      - db_net
+    depends_on:
+      corpus-init:
+        condition: service_completed_successfully
+    command: ["python", "-m", "app.services.auto_index"]
+    restart: "no"
+
   backend:
     build:
       context: ./backend
@@ -48,7 +63,7 @@ services:
       - app_net
       - db_net
     depends_on:
-      corpus-init:
+      index-init:
         condition: service_completed_successfully
     command:
       - python
