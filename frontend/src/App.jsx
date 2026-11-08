@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import AuthDialog from './AuthDialog.jsx'
 import './App.css'
 
 const PAGE_SIZE = 20
@@ -120,6 +121,11 @@ function Results({ query, mode, offset, onPageChange }) {
 
 function App() {
   const [mode, setMode] = useState('keyword')
+  const [authMode, setAuthMode] = useState(null)
+  const [user, setUser] = useState(null)
+  const [checkingSession, setCheckingSession] = useState(true)
+  const [loggingOut, setLoggingOut] = useState(false)
+  const [accountError, setAccountError] = useState('')
   const [request, setRequest] = useState({
     query: '',
     mode: 'keyword',
@@ -139,8 +145,92 @@ function App() {
     }))
   }
 
+  useEffect(() => {
+  const controller = new AbortController()
+
+  async function restoreSession() {
+    try {
+      const response = await fetch('/api/v1/auth/me', {
+        signal: controller.signal,
+      })
+
+      if (response.status === 401) return
+      if (!response.ok) throw new Error('Vérification impossible')
+
+      const profile = await response.json()
+      if (!controller.signal.aborted) setUser(profile)
+    } catch {
+      if (!controller.signal.aborted) {
+        setAccountError('Impossible de vérifier ta session.')
+      }
+    } finally {
+      if (!controller.signal.aborted) setCheckingSession(false)
+    }
+  }
+
+  restoreSession()
+  return () => controller.abort()
+}, [])
+
+function handleLogin(profile) {
+  setUser(profile)
+  setAuthMode(null)
+  setAccountError('')
+}
+
+async function handleLogout() {
+  setLoggingOut(true)
+  setAccountError('')
+
+  try {
+    const response = await fetch('/api/v1/auth/logout', { method: 'POST' })
+    if (!response.ok) throw new Error('Déconnexion impossible')
+
+    setUser(null)
+  } catch {
+    setAccountError('Impossible de te déconnecter. Réessaie.')
+  } finally {
+    setLoggingOut(false)
+  }
+}
+
   return (
     <main className="library">
+      <div className="account-actions" role="group" aria-label="Compte">
+        {checkingSession ? (
+          <span role="status">Vérification de la session…</span>
+        ) : user ? (
+          <>
+            <span className="account-welcome" role="status">
+              Bienvenue, {user.first_name} !
+            </span>
+
+            <button type="button" onClick={handleLogout} disabled={loggingOut}>
+              {loggingOut ? 'Déconnexion…' : 'Se déconnecter'}
+            </button>
+          </>
+        ) : (
+          <>
+            <button type="button" onClick={() => setAuthMode('login')}>
+              Se connecter
+            </button>
+
+            <button type="button" onClick={() => setAuthMode('signup')}>
+              S’inscrire
+            </button>
+          </>
+        )}
+      </div>
+
+      {accountError && <p role="alert">{accountError}</p>}
+
+      {authMode && (
+        <AuthDialog
+          initialMode={authMode}
+          onClose={() => setAuthMode(null)}
+          onLogin={handleLogin}
+        />
+      )}
       <header className="library-hero">
         <div className="hero-content">
           <svg

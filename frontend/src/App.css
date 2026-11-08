@@ -524,3 +524,32 @@
     min-height: 190px;
   }
 }
+
+.auth-notice {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border: 1px solid;
+  border-radius: 12px;
+  font-size: 0.9rem;
+}
+
+.auth-dialog .auth-notice--success {
+  color: #a9efc5;
+  background: #143329;
+  border-color: #347658;
+}
+
+.auth-dialog .auth-notice--error {
+  color: #ffb1b7;
+  background: #361f2b;
+  border-color: #824454;
+}
+
+.account-actions {
+  align-items: center;
+}
+
+.account-welcome {
+  color: var(--night-accent, #c4c7ff);
+  font-weight: 600;
+}

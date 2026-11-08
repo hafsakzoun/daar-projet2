@@ -1,23 +1,11 @@
-<svg
-  width="17"
-  height="17"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="currentColor"
-  strokeWidth="1.6"
-  strokeLinecap="round"
-  aria-hidden="true"
->
-  <circle cx="12" cy="8" r="3" />
-  <path d="M5 20v-1a7 7 0 0 1 14 0v1" />
-</svg>
-
 import { useEffect, useRef, useState } from 'react'
 
-function AuthDialog({ initialMode, onClose }) {
+function AuthDialog({ initialMode, onClose, onLogin }) {
   const dialog = useRef(null)
   const [mode, setMode] = useState(initialMode)
-  const [message, setMessage] = useState('')
+  const [notice, setNotice] = useState(null)
+  const [email, setEmail] = useState('')
+  const [pending, setPending] = useState(false)
   const isSignup = mode === 'signup'
 
   useEffect(() => {
@@ -28,13 +16,83 @@ function AuthDialog({ initialMode, onClose }) {
   }, [])
 
   function changeMode(nextMode) {
+    if (nextMode === mode) return
     setMode(nextMode)
-    setMessage('')
+    setNotice(null)
   }
 
-  function submit(event) {
+  async function submit(event) {
     event.preventDefault()
-    setMessage('Le formulaire est valide. La gestion des comptes reste à connecter.')
+    if (pending) return
+
+    const form = event.currentTarget
+    const fields = new FormData(form)
+    const payload = {
+      email: email.trim(),
+      password: fields.get('password'),
+    }
+
+    if (isSignup) {
+      payload.first_name = fields.get('firstName').trim()
+
+      if (!payload.first_name) {
+        setNotice({ type: 'error', text: 'Renseigne ton prénom.' })
+        return
+      }
+    }
+
+    setPending(true)
+    setNotice(null)
+
+    try {
+      const endpoint = isSignup ? 'signup' : 'login'
+      const response = await fetch(`/api/v1/auth/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (isSignup && response.status === 409) {
+        setNotice({
+          type: 'error',
+          text: 'Un compte existe déjà avec cette adresse e-mail.',
+        })
+        return
+      }
+
+      const expectedStatus = isSignup ? 201 : 200
+
+      if (response.status !== expectedStatus) {
+        const body = await response.json().catch(() => null)
+        const text = typeof body?.detail === 'string'
+          ? body.detail
+          : response.status === 422
+            ? 'Vérifie les champs et réessaie.'
+            : 'Une erreur est survenue. Réessaie dans un instant.'
+
+        setNotice({ type: 'error', text })
+        return
+      }
+
+      if (isSignup) {
+        setEmail(payload.email)
+        setMode('login')
+        setNotice({
+          type: 'success',
+          text: 'Ton compte a été créé. Tu peux maintenant te connecter.',
+        })
+      } else {
+        const user = await response.json()
+        onLogin(user)
+      }
+    } catch {
+      setNotice({
+        type: 'error',
+        text: 'Impossible de joindre le serveur. Réessaie dans un instant.',
+      })
+    } finally {
+      setPending(false)
+    }
   }
 
   return (
@@ -44,16 +102,20 @@ function AuthDialog({ initialMode, onClose }) {
       aria-labelledby="auth-title"
       onCancel={(event) => {
         event.preventDefault()
-        onClose()
+        if (!pending) onClose()
       }}
     >
       <div className="auth-heading">
-        <h2 id="auth-title">{isSignup ? 'Créer un compte' : 'Se connecter'}</h2>
+        <h2 id="auth-title">
+          {isSignup ? 'Créer un compte' : 'Se connecter'}
+        </h2>
+
         <button
           type="button"
           className="auth-close"
           aria-label="Fermer"
           onClick={onClose}
+          disabled={pending}
         >
           ×
         </button>
@@ -64,13 +126,16 @@ function AuthDialog({ initialMode, onClose }) {
           type="button"
           aria-pressed={!isSignup}
           onClick={() => changeMode('login')}
+          disabled={pending}
         >
           Connexion
         </button>
+
         <button
           type="button"
           aria-pressed={isSignup}
           onClick={() => changeMode('signup')}
+          disabled={pending}
         >
           Inscription
         </button>
@@ -80,7 +145,13 @@ function AuthDialog({ initialMode, onClose }) {
         {isSignup && (
           <label>
             Prénom
-            <input name="firstName" autoComplete="given-name" required />
+            <input
+              name="firstName"
+              autoComplete="given-name"
+              maxLength={80}
+              readOnly={pending}
+              required
+            />
           </label>
         )}
 
@@ -91,6 +162,10 @@ function AuthDialog({ initialMode, onClose }) {
             type="email"
             autoComplete="email"
             placeholder="nom@exemple.fr"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            maxLength={254}
+            readOnly={pending}
             required
           />
         </label>
@@ -101,20 +176,29 @@ function AuthDialog({ initialMode, onClose }) {
             name="password"
             type="password"
             autoComplete={isSignup ? 'new-password' : 'current-password'}
-            minLength={isSignup ? 8 : undefined}
+            minLength={isSignup ? 12 : undefined}
+            maxLength={128}
             aria-describedby={isSignup ? 'password-hint' : undefined}
+            readOnly={pending}
             required
           />
         </label>
 
-        {isSignup && <small id="password-hint">Au moins 8 caractères.</small>}
+        {isSignup && <small id="password-hint">Au moins 12 caractères.</small>}
 
-        <button type="submit">
-          {isSignup ? 'Créer mon compte' : 'Se connecter'}
+        <button type="submit" disabled={pending}>
+          {pending ? 'Patiente…' : isSignup ? 'Créer mon compte' : 'Se connecter'}
         </button>
-
-        <p className="auth-status" role="status">{message}</p>
       </form>
+
+      {notice && (
+        <p
+          className={`auth-notice auth-notice--${notice.type}`}
+          role={notice.type === 'error' ? 'alert' : 'status'}
+        >
+          {notice.text}
+        </p>
+      )}
     </dialog>
   )
 }
