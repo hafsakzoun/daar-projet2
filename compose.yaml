@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-daar}
       POSTGRES_USER: ${POSTGRES_USER:-daar_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Mot de passe requis}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-daar_dev_only}
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
@@ -15,32 +15,50 @@ services:
       timeout: 5s
       retries: 10
 
+  corpus-init:
+    build:
+      context: ./backend
+    environment: &db_environment
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-daar}
+      DB_USER: ${POSTGRES_USER:-daar_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-daar_dev_only}
+      CORPUS_URL: ${CORPUS_URL:-https://github.com/ouumm/daar-corpus-public/releases/download/corpus-v1/corpus-1700.tar.gz}
+    volumes:
+      - corpus:/data
+    networks:
+      - db_net
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["python", "-m", "app.services.auto_install"]
+    restart: "no"
+
   backend:
     build:
       context: ./backend
     ports:
       - "127.0.0.1:8000:8000"
     environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: ${POSTGRES_DB:-daar}
-      DB_USER: ${POSTGRES_USER:-daar_user}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:?Mot de passe requis}
-
+      <<: *db_environment
     volumes:
       - corpus:/data
     networks:
       - app_net
       - db_net
     depends_on:
-      db:
-        condition: service_healthy
+      corpus-init:
+        condition: service_completed_successfully
     command:
-      - sh
-      - -c
-      - |
-        python -c "from app.db.models import Base; from app.db.session import engine; Base.metadata.create_all(bind=engine)" &&
-        exec python -m uvicorn main:app --host 0.0.0.0 --port 8000
+      - python
+      - -m
+      - uvicorn
+      - main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
 
   frontend:
     build:
