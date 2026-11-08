@@ -69,15 +69,26 @@ def index_book(session, book):
     return len(postings)
 
 
-def build_index(limit=None):
+def build_index(limit=None, missing_only=False):
     """Construit l'index pour les livres sélectionnés."""
     with SessionLocal() as session:
-        query = select(Book).order_by(Book.id)
+        books = session.scalars(
+            select(Book).order_by(Book.id)
+        ).all()
+
+        if missing_only:
+            indexed_ids = set(
+                session.scalars(
+                    select(Posting.book_id).distinct()
+                ).all()
+            )
+            books = [
+                book for book in books
+                if book.id not in indexed_ids
+            ]
 
         if limit is not None:
-            query = query.limit(limit)
-
-        books = session.scalars(query).all()
+            books = books[:limit]
 
     print(f"Livres à indexer : {len(books)}", flush=True)
 
@@ -97,9 +108,10 @@ def build_index(limit=None):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--missing-only", action="store_true")
     args = parser.parse_args()
 
     if args.limit is not None and args.limit < 1:
         parser.error("--limit doit être supérieur à zéro")
 
-    build_index(args.limit)
+    build_index(args.limit, missing_only=args.missing_only)

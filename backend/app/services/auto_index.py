@@ -30,7 +30,7 @@ def main():
 
     if needs_index(book_count, indexed_count):
         print("Construction de l'index...", flush=True)
-        build_index()
+        build_index(missing_only=True)
     else:
         print("Index déjà complet. Aucune action.", flush=True)
 
