@@ -1,22 +1,61 @@
 services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-daar}
+      POSTGRES_USER: ${POSTGRES_USER:-daar_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Mot de passe requis}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - db_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   backend:
     build:
       context: ./backend
     ports:
       - "127.0.0.1:8000:8000"
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-daar}
+      DB_USER: ${POSTGRES_USER:-daar_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Mot de passe requis}
+
     volumes:
-      - ./backend:/app
+      - corpus:/data
+    networks:
+      - app_net
+      - db_net
+    depends_on:
+      db:
+        condition: service_healthy
+    command:
+      - sh
+      - -c
+      - |
+        python -c "from app.db.models import Base; from app.db.session import engine; Base.metadata.create_all(bind=engine)" &&
+        exec python -m uvicorn main:app --host 0.0.0.0 --port 8000
 
   frontend:
     build:
       context: ./frontend
     ports:
       - "127.0.0.1:5173:5173"
-    volumes:
-      - ./frontend:/app
-      - frontend_node_modules:/app/node_modules
+    networks:
+      - app_net
     depends_on:
       - backend
 
+networks:
+  app_net:
+  db_net:
+
 volumes:
-  frontend_node_modules:
+  pgdata:
+  corpus:

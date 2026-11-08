@@ -24,11 +24,7 @@ def create_app() -> FastAPI:
         prefix=settings.api_prefix,
     )
 
-    # Compatibilité temporaire avec les anciennes URL utilisées par React.
-    application.include_router(
-        api_router,
-        include_in_schema=False,
-    )
+   
 
     return application
 
