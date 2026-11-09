@@ -1,5 +1,31 @@
 # DAAR — Backlog du projet de recherche de livres
 
+## État actuel — novembre 2026
+
+Le projet utilise désormais **PostgreSQL**, et non SQLite.
+
+**Validé :**
+- Docker Compose, PostgreSQL et volumes persistants.
+- Installation des 1 700 livres sur un environnement neuf.
+- Indexation des 1 700 livres et reprise après interruption.
+- Démarrage FastAPI et React ; catalogue réel affiché.
+- 37 tests Python réussis dans GitLab CI.
+- Jobs `backend_tests` et `frontend_build` validés.
+
+**Restant à finaliser :**
+- Interface de recherche React.
+- Jaccard, graphe, PageRank et recommandations.
+- Vérifications fonctionnelles et performances.
+- Intégration des branches, accès Git, rapport et livraison.
+
+Les sections détaillées suivantes conservent les critères du plan initial.
+Certaines mentions de SQLite, chemins et scripts historiques ne décrivent
+plus l'implémentation actuelle.
+
+---
+
+
+
 Document à placer à la racine du dépôt : `TACHES_PROJET.md`.
 Organisation proposée à partir des éléments fournis, sans audit du code actuel.
 Les objectifs de 1 664 livres et 10 000 mots minimum par livre sont repris du plan fourni ; à confronter au sujet officiel.
@@ -21,7 +47,7 @@ Les attributions sont proposées et peuvent être adaptées à votre disponibili
 - Limite : un ticket de développement en cours par personne.
 - Branche : `feat/DAAR-XXX-description` ; PR citant le ticket.
 - Terminé : critères cochés, vérification effectuée, documentation adaptée et PR relue.
-- Tous les tickets commencent au statut **À faire** ; passer à Terminé après vérification si le travail existe déjà.
+- Le tableau de suivi indique les statuts actualisés. Les descriptions détaillées ci-dessous proviennent du plan initial et doivent être adaptées à l'architecture actuelle.
 
 ## Jalons
 
@@ -41,27 +67,27 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 | Ticket | Epic | Résumé | Responsable | Priorité | Points | Dépendances | Jalon | Statut |
 |---|---|---|---|---|---|---|---|---|
 | DAAR-001 | Socle | Partager le dépôt GitHub | P1 | P0 | 2 | Aucune | M0 | Terminé |
-| DAAR-002 | Socle | Préparer le stockage persistant | P1 | P0 | 2 | 001 | M0 | À faire |
-| DAAR-003 | Socle | Fixer le contrat API et les règles communes | P2 | P0 | 3 | 001 | M0 | À faire |
-| DAAR-004 | Corpus | Sélectionner les sources et 20 livres pilotes | P1 | P0 | 2 | 003 | M1 | À faire |
-| DAAR-005 | Corpus | Développer un téléchargement reprenable | P1 | P1 | 5 | 002, 004 | M1 | À faire |
-| DAAR-006 | Corpus | Nettoyer, contrôler et produire le manifeste | P1 | P1 | 5 | 005 | M1 | À faire |
-| DAAR-007 | Corpus | Importer le catalogue dans SQLite | P1 | P1 | 3 | 006 | M1 | À faire |
-| DAAR-008 | API | Exposer le catalogue FastAPI | P1 | P1 | 3 | 003, 007 | M1 | À faire |
-| DAAR-009 | Interface | Construire le catalogue et les états d’affichage | P2 | P1 | 5 | 003 | M1 | À faire |
-| DAAR-010 | Recherche | Construire l’index inversé | P1 | P1 | 5 | 006, 003 | M2 | À faire |
-| DAAR-011 | Recherche | Implémenter la recherche simple et son classement | P1 | P1 | 3 | 008, 010 | M2 | À faire |
-| DAAR-012 | Recherche | Implémenter la recherche regex | P1 | P1 | 5 | 010, 011 | M2 | À faire |
+| DAAR-002 | Socle | Préparer le stockage persistant | P1 | P0 | 2 | 001 | M0 | Terminé |
+| DAAR-003 | Socle | Fixer le contrat API et les règles communes | P2 | P0 | 3 | 001 | M0 | En cours |
+| DAAR-004 | Corpus | Sélectionner les sources et 20 livres pilotes | P1 | P0 | 2 | 003 | M1 | Terminé |
+| DAAR-005 | Corpus | Développer un téléchargement reprenable | P1 | P1 | 5 | 002, 004 | M1 | En cours |
+| DAAR-006 | Corpus | Nettoyer, contrôler et produire le manifeste | P1 | P1 | 5 | 005 | M1 | En cours |
+| DAAR-007 | Corpus | Importer le catalogue dans SQLite | P1 | P1 | 3 | 006 | M1 | Terminé |
+| DAAR-008 | API | Exposer le catalogue FastAPI | P1 | P1 | 3 | 003, 007 | M1 | Terminé |
+| DAAR-009 | Interface | Construire le catalogue et les états d’affichage | P2 | P1 | 5 | 003 | M1 | En cours |
+| DAAR-010 | Recherche | Construire l’index inversé | P1 | P1 | 5 | 006, 003 | M2 | Terminé |
+| DAAR-011 | Recherche | Implémenter la recherche simple et son classement | P1 | P1 | 3 | 008, 010 | M2 | En cours |
+| DAAR-012 | Recherche | Implémenter la recherche regex | P1 | P1 | 5 | 010, 011 | M2 | En cours |
 | DAAR-013 | Interface | Créer le formulaire de recherche et les résultats | P2 | P1 | 5 | 009, 003 | M2 | À faire |
 | DAAR-014 | Graphe | Construire les similarités de Jaccard | P2 | P1 | 5 | 006, 003 | M3 | À faire |
 | DAAR-015 | Graphe | Calculer et vérifier PageRank | P2 | P1 | 5 | 014 | M3 | À faire |
 | DAAR-016 | Recommandation | Créer la route de livres similaires | P2 | P1 | 3 | 008, 014 | M3 | À faire |
 | DAAR-017 | Intégration | Ajouter les scores et le tri PageRank | P1 | P1 | 3 | 011, 012, 015 | M3 | À faire |
 | DAAR-018 | Interface | Afficher les recommandations et terminer l’intégration | P2 | P1 | 3 | 013, 016, 017 | M3 | À faire |
-| DAAR-019 | Corpus | Passer au corpus complet | P1 | P1 | 5 | 007, 010, 014, 015, 018 | M4 | À faire |
-| DAAR-020 | Qualité | Vérifier l’exactitude et mesurer les performances | P1 | P2 | 5 | 019, 017 | M5 | À faire |
+| DAAR-019 | Corpus | Passer au corpus complet | P1 | P1 | 5 | 007, 010, 014, 015, 018 | M4 | En cours |
+| DAAR-020 | Qualité | Vérifier l’exactitude et mesurer les performances | P1 | P2 | 5 | 019, 017 | M5 | En cours |
 | DAAR-021 | Qualité | Évaluer la pertinence et produire les graphiques | P2 | P2 | 5 | 019, 018, 020 | M5 | À faire |
-| DAAR-022 | Livraison | Documenter le backend et la reproduction du corpus | P1 | P2 | 3 | 020 | M5 | À faire |
+| DAAR-022 | Livraison | Documenter le backend et la reproduction du corpus | P1 | P2 | 3 | 020 | M5 | En cours |
 | DAAR-023 | Livraison | Finaliser rapport, archive et démonstration | P2 | P2 | 3 | 021, 022 | M5 | À faire |
 
 ## Tickets détaillés

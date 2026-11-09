@@ -63,7 +63,7 @@ Au premier lancement, Docker Compose :
 
 Les volumes Docker permettent de conserver les données entre les redémarrages.
 
-L'installation complète depuis des volumes vides doit être validée sur un environnement isolé.
+Une installation Docker sur des volumes initialement vides a été validée : 1 700 livres importés et indexés, reprise de l'indexation après interruption, backend FastAPI et frontend React accessibles en HTTP 200.
 
 ## Recherche
 
@@ -91,15 +91,24 @@ GET /api/v1/books/11
 
 Les routes de recherche et de catalogue prennent en charge la pagination.
 
-## Tests
+## Tests et intégration continue
 
-Les tests sont exécutés depuis le conteneur backend :
+Le projet utilise pytest pour les tests unitaires et d'intégration.
 
-docker compose build backend
+La suite comporte 37 tests validés dans GitLab CI.
 
-docker compose run --rm -T --no-deps backend python -m pytest tests/ -v
+Les tests d'intégration utilisent une base PostgreSQL dédiée `daar_test`.
+Certaines fixtures réinitialisent les tables : ne pas exécuter la suite
+complète directement sur la base principale `daar`.
 
-La suite comprend actuellement 37 tests, dont des tests d'intégration nécessitant une base PostgreSQL déjà initialisée et indexée.
+Les dépendances de test sont définies dans
+`backend/requirements-test.txt`.
+
+Le fichier `.gitlab-ci.yml` comporte deux jobs :
+- `backend_tests` : tests Python avec PostgreSQL isolé ;
+- `frontend_build` : compilation du frontend React.
+
+Les deux jobs ont été validés.
 
 ## Organisation du stockage
 
@@ -126,4 +135,4 @@ Le dépôt contient le code source et les scripts permettant de récupérer auto
 
 Le corpus volumineux et les fichiers PostgreSQL générés ne sont pas inclus directement dans l'archive du code source.
 
-Les tests finaux de reproductibilité, l'intégration et la CI/CD doivent être complétés avant la livraison.
+La reproductibilité Docker et la CI ont été vérifiées. L'intégration des fonctionnalités restantes, les accès Git du professeur et la livraison finale restent à vérifier.
