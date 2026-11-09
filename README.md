@@ -136,3 +136,10 @@ Le dépôt contient le code source et les scripts permettant de récupérer auto
 Le corpus volumineux et les fichiers PostgreSQL générés ne sont pas inclus directement dans l'archive du code source.
 
 La reproductibilité Docker et la CI ont été vérifiées. L'intégration des fonctionnalités restantes, les accès Git du professeur et la livraison finale restent à vérifier.
+
+
+## Résultats de validation
+
+Les vérifications du corpus, de l'index inversé, des recherches,
+des empreintes SHA-256 et des performances sont documentées dans
+[docs/VALIDATION_P1.md](docs/VALIDATION_P1.md).

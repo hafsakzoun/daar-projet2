@@ -30,6 +30,28 @@ Document à placer à la racine du dépôt : `TACHES_PROJET.md`.
 Organisation proposée à partir des éléments fournis, sans audit du code actuel.
 Les objectifs de 1 664 livres et 10 000 mots minimum par livre sont repris du plan fourni ; à confronter au sujet officiel.
 
+## Validation P1 du 9 novembre 2026
+
+Les résultats complets sont disponibles dans
+[docs/VALIDATION_P1.md](docs/VALIDATION_P1.md).
+
+- **DAAR-005 — En cours** : installation et vérification du corpus
+  opérationnelles ; téléchargement HTTP partiel non reprenable.
+- **DAAR-006 — En cours** : 1 700 livres cohérents entre manifeste,
+  PostgreSQL et fichiers ; 0 empreinte incorrecte, 0 doublon exact.
+  Méthode de nettoyage restant à documenter.
+- **DAAR-011 — En cours de finalisation** : recherche simple,
+  pagination, résultats vides et fréquences SQL vérifiés.
+- **DAAR-012 — En cours de finalisation** : regex, erreurs HTTP 400
+  et scores SQL vérifiés.
+- **DAAR-020 — En cours** : premières mesures de performances réalisées.
+  Moyennes : 29,00 ms pour la recherche simple et 314,23 ms
+  pour la recherche regex.
+- **DAAR-022 — En cours** : trace technique produite,
+  rapport final restant à rédiger.
+
+---
+
 ## Équipe et fonctionnement
 
 | Rôle | Responsable | Périmètre principal |
