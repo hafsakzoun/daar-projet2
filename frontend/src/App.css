@@ -771,3 +771,70 @@
     border-left: 0;
   }
 }
+
+.recommendations-drawer .recommendations-drawer__header {
+  align-items: flex-start;
+  padding: 1rem 1.25rem;
+}
+
+.recommendations-drawer .recommendations-kicker {
+  margin: 0 0 0.35rem;
+  color: #b8b4dd;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.recommendations-drawer .recommendations-source {
+  margin: 0.45rem 0 0;
+  color: #c5c2d9;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.recommendations-drawer .recommendations-drawer__close {
+  width: 2.25rem;
+  height: 2.25rem;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 1px solid #514d73;
+  border-radius: 0.5rem;
+  background: #24253a;
+  color: #f2f1ff;
+  font-size: 1.25rem;
+  line-height: 1;
+  box-shadow: none;
+}
+
+.recommendations-drawer .recommendations-drawer__close:hover {
+  background: #343550;
+}
+
+.recommendations-drawer .recommendations-drawer__close:focus-visible {
+  outline: 2px solid #b0aaff;
+  outline-offset: 2px;
+}
+
+/* Le titre du panneau est déjà affiché dans son en-tête. */
+.recommendations-drawer__body :is(h2, h3):first-child {
+  display: none;
+}
+
+.recommendations-drawer__body ul {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recommendations-drawer__body li {
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #393653;
+  border-radius: 0.65rem;
+  background: #1e2033;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}

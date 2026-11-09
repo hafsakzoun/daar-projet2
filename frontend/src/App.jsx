@@ -76,7 +76,7 @@ function RecommendationsDrawer({ book, onClose }) {
       <header className="recommendations-drawer__header">
         <div>
           <p className="recommendations-kicker">Lisière · Découverte</p>
-          <h2 id="recommendations-heading">À lire ensuite</h2>
+          <h2 id="recommendations-heading">Livres similaires</h2>
           <p className="recommendations-source">
             À partir de <cite>{book.title}</cite>
           </p>
