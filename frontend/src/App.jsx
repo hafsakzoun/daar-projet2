@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const API_URL = 'http://127.0.0.1:8000/api/v1'
+const API_URL = '/api/v1'
 
 function App() {
   const [books, setBooks] = useState([])
@@ -21,7 +21,7 @@ function App() {
         }
 
         const data = await response.json()
-        setBooks(data)
+        setBooks(data.results)
       } catch (err) {
         if (err.name !== 'AbortError') {
           setError('Impossible de récupérer les livres depuis FastAPI.')
