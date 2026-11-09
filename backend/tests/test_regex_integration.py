@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.usefixtures("seeded_db")
+
 from app.db.session import SessionLocal
 from app.services.regex_search import search_regex
 from app.services.search import search_books

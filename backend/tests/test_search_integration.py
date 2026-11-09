@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.usefixtures("seeded_db")
+
 
 from sqlalchemy import select
 
