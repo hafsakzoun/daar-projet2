@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import AuthDialog from './AuthDialog.jsx'
+import BookRecommendations from './BookRecommendations'
 import './App.css'
 
 const PAGE_SIZE = 20
@@ -57,6 +58,48 @@ function useReadingActivity(userId) {
   return { activity: current, save, storageError }
 }
 
+function RecommendationsDrawer({ book, onClose }) {
+  const dialogRef = useRef(null)
+
+  useEffect(() => {
+    const dialog = dialogRef.current
+    if (!dialog.open) dialog.showModal()
+  }, [])
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className="recommendations-drawer"
+      aria-labelledby="recommendations-heading"
+      onClose={onClose}
+    >
+      <header className="recommendations-drawer__header">
+        <div>
+          <p className="recommendations-kicker">Lisière · Découverte</p>
+          <h2 id="recommendations-heading">À lire ensuite</h2>
+          <p className="recommendations-source">
+            À partir de <cite>{book.title}</cite>
+          </p>
+        </div>
+
+        <form method="dialog">
+          <button
+            type="submit"
+            className="recommendations-drawer__close"
+            aria-label="Fermer les recommandations"
+          >
+            ×
+          </button>
+        </form>
+      </header>
+
+      <div className="recommendations-drawer__body">
+        <BookRecommendations bookId={book.id} />
+      </div>
+    </dialog>
+  )
+}
+
 function Results({
   query,
   mode,
@@ -67,6 +110,7 @@ function Results({
 }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
+  const [selectedBook, setSelectedBook] = useState(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -115,7 +159,6 @@ function Results({
   return (
     <section className="results" aria-labelledby="results-title">
       <h2 id="results-title">{query ? 'Résultats de recherche' : 'Catalogue'}</h2>
-
       {error && <p role="alert">{error}</p>}
       {!data && !error && <p role="status">Chargement…</p>}
 
@@ -164,6 +207,16 @@ function Results({
                           {book.score === 1 ? 'occurrence' : 'occurrences'}
                         </span>
                       )}
+
+                      <button
+                        type="button"
+                        className="similar-trigger"
+                        aria-haspopup="dialog"
+                        aria-label={`Livres similaires à ${book.title}`}
+                        onClick={() => setSelectedBook(book)}
+                      >
+                        <span aria-hidden="true">↗</span> Similaires
+                      </button>
                     </div>
                   </li>
                 )
@@ -196,6 +249,13 @@ function Results({
             </nav>
           )}
         </>
+      )}
+      {selectedBook && (
+        <RecommendationsDrawer
+          key={selectedBook.id}
+          book={selectedBook}
+          onClose={() => setSelectedBook(null)}
+        />
       )}
     </section>
   )

@@ -651,3 +651,123 @@
   margin: 0 0 8px;
   font-size: 1rem;
 }
+
+.library .similar-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: fit-content;
+  min-height: 2rem;
+  margin-top: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid #393653;
+  border-radius: 0.5rem;
+  background: #1c1d30;
+  color: #d6d4ff;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.library .similar-trigger:hover,
+.library .similar-trigger:focus-visible {
+  border-color: #7771aa;
+  background: #2a2b45;
+}
+
+.library .similar-trigger:focus-visible,
+.recommendations-drawer__close:focus-visible {
+  outline: 2px solid #b0aaff;
+  outline-offset: 3px;
+}
+
+.recommendations-drawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  box-sizing: border-box;
+  width: min(100%, 28rem);
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-left: 1px solid #393653;
+  background: #151625;
+  color: #f2f1ff;
+  box-shadow: -16px 0 48px rgb(0 0 0 / 35%);
+}
+
+.recommendations-drawer[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.recommendations-drawer::backdrop {
+  background: rgb(8 9 18 / 65%);
+}
+
+.recommendations-drawer__header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-bottom: 1px solid #393653;
+}
+
+.recommendations-drawer__header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  overflow-wrap: anywhere;
+}
+
+.recommendations-drawer__close {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid #514d73;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: inherit;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+.recommendations-drawer__close:hover {
+  background: #2a2b45;
+}
+
+.recommendations-drawer__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.25rem;
+}
+
+.recommendations-drawer__list {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recommendations-drawer__list > li {
+  padding: 0.8rem 1rem;
+  border: 1px solid #34314d;
+  border-radius: 0.65rem;
+  background: #1e2033;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 28rem) {
+  .recommendations-drawer {
+    border-left: 0;
+  }
+}

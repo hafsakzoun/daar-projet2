@@ -59,6 +59,7 @@ services:
       <<: *db_environment
     volumes:
       - corpus:/data
+      - ./data/generated:/data/generated:ro
     networks:
       - app_net
       - db_net
@@ -94,3 +95,5 @@ networks:
 volumes:
   pgdata:
   corpus:
+
+

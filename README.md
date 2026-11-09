@@ -49,7 +49,17 @@ Les textes des livres seront conservés dans des fichiers. L’organisation du s
 | `frontend/vite.config.js` | Configuration Vite |
 | `README.md` | Documentation générale du projet |
 
-## Prérequis
+## Démarrage avec Docker
+
+Depuis la racine du dépôt, avec Docker Compose installé :
+
+```bash
+docker compose up --build
+```
+
+Ouvrir l’interface sur <http://localhost:5173>. La documentation FastAPI est disponible sur <http://127.0.0.1:8000/docs>. Le démarrage utilise des valeurs par défaut et fonctionne sans fichier `.env`. Pour personnaliser les origines CORS des appels directs à FastAPI, utiliser `.env.example` comme modèle.
+
+## Prérequis pour le lancement sans Docker
 
 Configuration utilisée lors de l’initialisation :
 
@@ -145,9 +155,9 @@ Laisser les deux terminaux ouverts. `Ctrl + C` arrête le serveur du terminal co
 
 ### Communication entre React et FastAPI
 
-Pour le développement local, les requêtes React pourront viser `http://127.0.0.1:8000`. Le backend doit autoriser l’origine `http://localhost:5173` via sa configuration CORS.
+React envoie ses requêtes à `/api/v1`. Vite les transmet à FastAPI via le réseau Docker quand Compose est utilisé, et vers `http://127.0.0.1:8000` lors d’un lancement local sans Docker.
 
-Pour une démonstration depuis un téléphone ou un autre ordinateur, une configuration réseau supplémentaire sera nécessaire : interfaces d’écoute, adresse IP du serveur et origines autorisées. Sur un téléphone, `127.0.0.1` désigne le téléphone lui-même.
+Les ports Compose sont accessibles depuis la machine qui exécute Docker. Pour une démonstration depuis un autre appareil, il faudra rendre le port du frontend accessible sur le réseau local.
 
 ## Corpus et traitement prévus
 
