@@ -41,3 +41,24 @@ class GraphAlgorithmsTests(unittest.TestCase):
         self.assertAlmostEqual(scores[2], 4 / 9)
         self.assertAlmostEqual(scores[3], 13 / 54)
         self.assertAlmostEqual(sum(scores.values()), 1.0)
+
+    def test_jaccard_vocabularies_identiques(self):
+        words = {"roi", "reine"}
+        self.assertEqual(jaccard_similarity(words, words), 1.0)
+
+    def test_jaccard_deux_vocabularies_vides(self):
+        self.assertEqual(jaccard_similarity(set(), set()), 0.0)
+
+    def test_graphe_exclut_une_similarite_sous_le_seuil(self):
+        books = {1: {"roi"}, 2: {"roi", "reine"}}
+
+        graph = build_jaccard_graph(books, threshold=0.6)
+
+        self.assertEqual(graph, {1: {}, 2: {}})
+
+    def test_graphe_exclut_une_similarite_nulle_meme_avec_un_seuil_nul(self):
+        books = {1: {"roi"}, 2: {"château"}}
+
+        graph = build_jaccard_graph(books, threshold=0.0)
+
+        self.assertEqual(graph, {1: {}, 2: {}})
