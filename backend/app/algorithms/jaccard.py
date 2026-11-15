@@ -1,13 +1,9 @@
 from itertools import combinations
 
 def jaccard_similarity(first: set[str], second: set[str]) -> float:
-    common_words = first & second
-    all_words = first | second
-
-    if not all_words:
-        return 0.0
-
-    return len(common_words) / len(all_words)
+    common_count = len(first & second)
+    union_count = len(first) + len(second) - common_count
+    return common_count / union_count if union_count else 0.0
 
 def build_jaccard_graph(
     vocabularies: dict[int, set[str]], *, threshold: float

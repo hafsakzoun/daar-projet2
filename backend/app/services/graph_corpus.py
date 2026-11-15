@@ -1,4 +1,5 @@
 from sqlalchemy import select
+from sys import intern
 
 from app.db.models import Posting, Term
 
@@ -19,7 +20,7 @@ def load_book_vocabularies(
     )
 
     vocabularies: dict[int, set[str]] = {}
-    for book_id, word in session.execute(query):
-        vocabularies.setdefault(book_id, set()).add(word)
+    for book_id, word in session.execute(query.execution_options(yield_per=5000)):
+        vocabularies.setdefault(book_id, set()).add(intern(word))
 
     return vocabularies
