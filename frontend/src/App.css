@@ -838,3 +838,18 @@
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
+
+.recommendations-drawer .recommendations-title {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #c4c4ff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.recommendations-drawer .recommendations-title:hover,
+.recommendations-drawer .recommendations-title:focus-visible {
+  text-decoration: underline;
+}
