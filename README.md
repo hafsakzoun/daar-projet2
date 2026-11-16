@@ -1,145 +1,198 @@
 # DAAR — Projet 2 : moteur de recherche de livres
 
-Projet réalisé dans le cadre de l'UE DAAR du Master Informatique de Sorbonne Université.
+Projet de l'UE DAAR du Master Informatique de Sorbonne Université.
 
-L'objectif est de développer un moteur de recherche de livres avec index inversé, recherche par mots-clés, expressions régulières et recommandations.
+Objectif : développer un moteur de recherche de livres avec
+index inversé, recherche par mots-clés, expressions régulières,
+classement et recommandations.
 
 ## Technologies
 
-- Backend : Python 3.12, FastAPI, SQLAlchemy
-- Base de données : PostgreSQL 16
-- Frontend : React et Vite
-- Conteneurisation : Docker Compose
-- Tests : pytest
+- Python 3.12, FastAPI, SQLAlchemy
+- PostgreSQL 16
+- React et Vite
+- Docker Compose
+- pytest
 
-## Corpus
+## Corpus Gutenberg
 
-Le corpus contient 1 700 livres issus de Project Gutenberg, chacun contenant au moins 10 000 mots.
+Le corpus contient 1 700 livres de Project Gutenberg.
+Chaque livre contient au moins 10 000 mots.
 
-Les fichiers texte sont conservés dans un volume Docker dédié.
+Validation réalisée :
+- 1 700 fichiers présents ;
+- 1 700 empreintes SHA-256 conformes ;
+- 1 700 livres au-dessus de 10 000 mots ;
+- 1 700 livres indexés.
 
-Le corpus est téléchargé automatiquement depuis :
+L'index PostgreSQL contient :
+- 1 000 281 termes distincts ;
+- 15 546 923 associations livre-terme.
+
+L'archive externe du corpus est disponible à l'adresse :
 
 https://github.com/ouumm/daar-corpus-public/releases/download/corpus-v1/corpus-1700.tar.gz
 
-Les métadonnées et l'index inversé sont enregistrés dans PostgreSQL.
+Le téléchargement est reprenable par requêtes HTTP Range lorsque
+le serveur le permet. L'archive est contrôlée par SHA-256.
 
-L'index comprend environ :
-- 1 000 281 termes distincts ;
-- 15,5 millions de postings ;
-- 1 700 livres indexés.
+## Installation Docker
 
-## Installation avec Docker
+Prérequis : Docker Desktop ou Docker Engine avec Docker Compose.
 
-### Prérequis
+Cloner le dépôt et se placer à sa racine.
 
-- Docker Desktop ou Docker Engine avec Compose
-- Git
-- Connexion Internet pour télécharger le corpus
+Pour une nouvelle installation, préparer les variables
+d'environnement :
 
-Cloner le dépôt, puis se placer à sa racine.
+    cp .env.example .env
 
-Démarrer l'application :
+Modifier POSTGRES_PASSWORD dans le fichier .env avant de lancer
+PostgreSQL. Ne pas publier ce fichier dans Git.
 
-docker compose up --build
+Démarrer les services :
 
-Aucun fichier .env n'est obligatoire pour un lancement local : Docker Compose utilise des valeurs par défaut.
+    docker compose up -d --build
 
-Pour personnaliser la configuration, utiliser le fichier .env.example comme référence avant la première initialisation de PostgreSQL.
+Vérifier leur état :
 
-### Services
+    docker compose ps -a
+
+Les services db, backend et frontend disposent de healthchecks.
+Les services corpus-init et index-init sont des tâches
+d'initialisation : leur état normal après succès est Exited (0).
+
+Au premier lancement :
+1. PostgreSQL démarre.
+2. Le corpus est téléchargé et vérifié.
+3. L'index inversé est construit.
+4. Le backend démarre.
+5. Le frontend démarre.
+
+Le premier téléchargement et la première indexation peuvent être
+longs et nécessitent suffisamment d'espace disque.
+
+## Accès local
 
 - Frontend : http://localhost:5173
-- Backend : http://localhost:8000
+- API : http://localhost:8000
 - Documentation API : http://localhost:8000/docs
-- Santé de l'API : http://localhost:8000/api/v1/health
+- Santé API : http://localhost:8000/api/v1/health
 
-Au premier lancement, Docker Compose :
-1. démarre PostgreSQL ;
-2. télécharge et installe le corpus ;
-3. construit l'index inversé ;
-4. démarre le backend FastAPI ;
-5. démarre le frontend React.
+Par défaut, les ports applicatifs sont publiés uniquement sur
+127.0.0.1. La démonstration sur plusieurs machines nécessitera
+une configuration réseau supplémentaire.
 
-Les volumes Docker permettent de conserver les données entre les redémarrages.
+Le frontend actuel utilise le serveur de développement Vite.
+Un déploiement de production du frontend reste à préparer.
 
-Une installation Docker sur des volumes initialement vides a été validée : 1 700 livres importés et indexés, reprise de l'indexation après interruption, backend FastAPI et frontend React accessibles en HTTP 200.
+## Arrêt et conservation des données
 
-## Recherche
+Arrêter les conteneurs sans supprimer les volumes :
 
-### Recherche simple
+    docker compose down
 
-GET /api/v1/search?q=alice
+Redémarrer les services :
 
-La recherche utilise l'index inversé et classe les résultats selon la somme des fréquences des mots recherchés.
+    docker compose up -d
 
-Les recherches avec plusieurs mots utilisent une logique OU.
+Deux volumes principaux conservent les données :
+- pgdata : PostgreSQL et index inversé ;
+- corpus : fichiers texte Gutenberg.
 
-### Recherche par expressions régulières
+ATTENTION : ne pas utiliser docker compose down -v si les données
+doivent être conservées.
 
-GET /api/v1/search/regex?q=alice
+## Recherche explicite
 
-La regex est appliquée au vocabulaire de l'index inversé et non directement aux phrases complètes des livres.
+Recherche par mots-clés :
 
-Les résultats sont classés selon la fréquence cumulée des termes correspondants.
+    GET /api/v1/search?q=alice
 
-### Catalogue
+Le classement repose sur les fréquences cumulées des termes.
+Les requêtes comportant plusieurs mots utilisent une logique OU.
 
-GET /api/v1/books
+Recherche par expression régulière :
 
-GET /api/v1/books/11
+    GET /api/v1/search/regex?q=alice%7Crabbit
 
-Les routes de recherche et de catalogue prennent en charge la pagination.
+Les expressions régulières s'appliquent aux termes de l'index
+inversé, pas directement aux phrases complètes des livres.
 
-## Tests et intégration continue
+Catalogue :
 
-Le projet utilise pytest pour les tests unitaires et d'intégration.
+    GET /api/v1/books
+    GET /api/v1/books/11
 
-La suite comporte 37 tests validés dans GitLab CI.
+Les routes de recherche et de catalogue prennent en charge
+la pagination.
 
-Les tests d'intégration utilisent une base PostgreSQL dédiée `daar_test`.
-Certaines fixtures réinitialisent les tables : ne pas exécuter la suite
-complète directement sur la base principale `daar`.
+## Tests
 
-Les dépendances de test sont définies dans
-`backend/requirements-test.txt`.
+41 tests backend ont réussi localement.
 
-Le fichier `.gitlab-ci.yml` comporte deux jobs :
-- `backend_tests` : tests Python avec PostgreSQL isolé ;
-- `frontend_build` : compilation du frontend React.
+Utiliser uniquement la base de test daar_test pour la suite
+d'intégration : certaines fixtures réinitialisent les tables.
 
-Les deux jobs ont été validés.
+Lorsque la base daar_test existe :
 
-## Organisation du stockage
+    docker compose run --rm -T --no-deps -e DB_NAME=daar_test -e DAAR_TEST_DB=1 backend python -m pytest -q
 
-Deux volumes Docker principaux :
+Ne jamais lancer cette suite sur la base principale daar.
 
-- pgdata : base PostgreSQL, métadonnées et index inversé ;
-- corpus : fichiers texte des livres.
+Les dépendances de développement sont déclarées dans
+backend/requirements-dev.txt.
 
-Les deux volumes persistent entre les redémarrages ordinaires.
+La CI utilise backend/requirements-test.txt.
+Le fichier .gitlab-ci.yml comporte les jobs backend_tests
+et frontend_build.
 
-Attention : ne pas utiliser docker compose down -v pour arrêter le projet si les données doivent être conservées.
+Les 41 tests locaux ne constituent pas à eux seuls une nouvelle
+validation de la CI après les derniers commits.
 
-## Fonctionnalités en développement
+## Performances
 
-- Calcul des similarités entre livres avec Jaccard ;
-- Construction du graphe de similarité ;
-- PageRank ;
-- Recommandations ;
-- Intégration complète du frontend React.
+Les recherches ont été mesurées sur 1 700 livres,
+avec 20 répétitions pour chacune des six requêtes.
+
+Recherche simple : 3,67 à 11,23 ms en moyenne.
+Recherche Regex : 313,02 à 328,34 ms en moyenne.
+
+Ces mesures concernent les requêtes SQL, sans temps HTTP
+ni rendu React.
+
+Fichiers de résultats :
+- docs/benchmark_p1_full.csv
+- docs/benchmark_p1_simple.svg
+- docs/benchmark_p1_regex.svg
+- docs/PERFORMANCES_P1.md
+
+Les comparaisons sur plusieurs tailles réelles de bases
+restent à compléter.
+
+## Documentation et validation
+
+Voir :
+- docs/VALIDATION_P1.md
+- docs/PERFORMANCES_P1.md
+
+## Fonctionnalités restant à intégrer
+
+- Calcul de similarité Jaccard
+- Graphe de similarité entre livres
+- PageRank et classement implicite
+- Recommandations de livres
+- Intégration complète du frontend
+- Démonstration sur plusieurs machines
 
 ## Livraison
 
-Le dépôt contient le code source et les scripts permettant de récupérer automatiquement le corpus externe.
+Le dépôt contient le code source et les scripts nécessaires
+pour récupérer le corpus externe.
 
-Le corpus volumineux et les fichiers PostgreSQL générés ne sont pas inclus directement dans l'archive du code source.
+Le corpus volumineux et les volumes PostgreSQL ne sont pas
+inclus dans l'archive de livraison.
 
-La reproductibilité Docker et la CI ont été vérifiées. L'intégration des fonctionnalités restantes, les accès Git du professeur et la livraison finale restent à vérifier.
-
-
-## Résultats de validation
-
-Les vérifications du corpus, de l'index inversé, des recherches,
-des empreintes SHA-256 et des performances sont documentées dans
-[docs/VALIDATION_P1.md](docs/VALIDATION_P1.md).
+Une installation sur volumes vierges avait été validée avant
+les derniers changements. Une nouvelle vérification complète
+de reproductibilité reste à effectuer.
