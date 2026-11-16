@@ -1,7 +1,27 @@
-# Fichiers exclus de la construction Docker
+# Environnements virtuels
+.venv/
+venv/
+**/.venv/
 
-.venv
-**pycache**
-\*.pyc
-.DS_Store
+# Fichiers Python generes
+__pycache__/
+**/__pycache__/
+*.pyc
+**/*.pyc
+*.pyo
+**/*.pyo
+
+# Caches de tests et d'analyse
+.pytest_cache/
+**/.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Fichiers locaux et secrets
 .env
+.env.*
+.DS_Store
+**/.DS_Store
+
+# Git
+.git/
