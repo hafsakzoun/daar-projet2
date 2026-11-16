@@ -50,6 +50,38 @@ services:
     command: ["python", "-m", "app.services.auto_index"]
     restart: "no"
 
+
+  graph-init:
+    build:
+      context: ./backend
+    environment:
+      <<: *db_environment
+      GRAPH_LIMIT: ${GRAPH_LIMIT:-}
+      GRAPH_THRESHOLD: ${GRAPH_THRESHOLD:-0.20}
+    volumes:
+      - graphdata:/data/generated
+    networks:
+      - db_net
+    depends_on:
+      index-init:
+        condition: service_completed_successfully
+    command:
+      - sh
+      - -ec
+      - |
+          if [ -s /data/generated/graph-pilot.json ] && python -m scripts.graph_cache_valid; then
+            echo "Graphe deja disponible"
+            exit 0
+          fi
+          set --
+          if [ -n "$$GRAPH_LIMIT" ]; then
+            set -- --limit "$$GRAPH_LIMIT"
+          fi
+          python -m scripts.build_graph "$$@" --threshold "$$GRAPH_THRESHOLD" > /data/generated/.graph-pilot.json.tmp
+          python -m json.tool /data/generated/.graph-pilot.json.tmp > /dev/null
+          mv /data/generated/.graph-pilot.json.tmp /data/generated/graph-pilot.json
+    restart: "no"
+
   backend:
     build:
       context: ./backend
@@ -59,12 +91,12 @@ services:
       <<: *db_environment
     volumes:
       - corpus:/data
-      - ./data/generated:/data/generated:ro
+      - graphdata:/data/generated:ro
     networks:
       - app_net
       - db_net
     depends_on:
-      index-init:
+      graph-init:
         condition: service_completed_successfully
     command:
       - python
@@ -116,3 +148,4 @@ networks:
 volumes:
   pgdata:
   corpus:
+  graphdata:
