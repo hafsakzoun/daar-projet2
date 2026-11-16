@@ -132,7 +132,7 @@ def test_regex_api_returns_503(monkeypatch):
     def fail(*args, **kwargs):
         raise PageRankUnavailable("Graphe incomplet")
 
-    monkeypatch.setattr(search_api, "search_regex_v2", fail)
+    monkeypatch.setattr(search_api, "search_regex_automate_v2", fail)
 
     with pytest.raises(HTTPException) as exc:
         search_api.regex_search(

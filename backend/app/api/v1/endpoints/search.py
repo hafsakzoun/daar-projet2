@@ -15,6 +15,13 @@ from app.services.search_optimized import (
 )
 
 
+
+from app.services.automate_v2 import AutomateV2, RegexError
+from app.services.regex_automate_search_v2 import (
+    search_regex_automate_v2,
+    TooManyRegexMatches,
+)
+
 router = APIRouter()
 
 
@@ -49,41 +56,47 @@ def search(
 
 @router.get(
     "/search/regex",
-    summary="Recherche Regex sur les racines en V2",
+    summary="Recherche RegEx par automate sur l'index V2",
 )
 def regex_search(
     q: str = Query(min_length=1),
     limit: int = Query(default=20, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
-    sort: Literal["occurrences", "pagerank"] = Query(default="occurrences"),
+    sort: Literal["occurrences", "pagerank"] = Query(
+        default="occurrences"
+    ),
     db: Session = Depends(get_db),
 ):
     try:
-        validate_regex(q)
-    except ValueError as error:
+        AutomateV2(q)
+    except RegexError as error:
         raise HTTPException(
             status_code=400,
             detail=str(error),
         ) from error
 
-    try:
-        if v2_ready(db):
-            return search_regex_v2(db, q, limit, offset, sort=sort)
-
-        if sort == "pagerank":
-            raise HTTPException(
-                status_code=503,
-                detail="Index V2 indisponible pour le tri PageRank.",
-            )
-
-        return search_regex(db, q, limit, offset)
-
-    except PageRankUnavailable as error:
-        raise HTTPException(status_code=503, detail=str(error)) from error
-
-    except DBAPIError as error:
-        db.rollback()
+    if not v2_ready(db):
         raise HTTPException(
             status_code=503,
-            detail="Recherche regex interrompue ou non prise en charge.",
+            detail="Index V2 indisponible.",
+        )
+
+    try:
+        return search_regex_automate_v2(
+            db, q, limit, offset, sort=sort
+        )
+    except TooManyRegexMatches as error:
+        raise HTTPException(
+            status_code=422,
+            detail=str(error),
+        ) from error
+    except RegexError as error:
+        raise HTTPException(
+            status_code=400,
+            detail=str(error),
+        ) from error
+    except PageRankUnavailable as error:
+        raise HTTPException(
+            status_code=503,
+            detail=str(error),
         ) from error
