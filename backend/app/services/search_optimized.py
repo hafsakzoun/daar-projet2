@@ -11,33 +11,54 @@ from app.services.regex_search import validate_regex
 LANGUAGES = ("en", "fr", "de", "ang")
 
 
-def _response(db, query, score, limit, offset):
-    total = db.scalar(
-        select(func.count()).select_from(query.subquery())
-    ) or 0
+def _response(db, query, score, limit, offset, sort="occurrences"):
+    pagerank_scores = None
 
-    rows = db.execute(
-        query
-        .order_by(score.desc(), Book.id.asc())
-        .offset(offset)
-        .limit(limit)
-    ).all()
+    if sort == "pagerank":
+        from app.services.pagerank_scores import (
+            load_pagerank_scores,
+            sort_pagerank_rows,
+        )
+
+        pagerank_scores = load_pagerank_scores()
+        all_rows = db.execute(query).all()
+        ordered = sort_pagerank_rows(all_rows, pagerank_scores)
+
+        total = len(ordered)
+        rows = ordered[offset:offset + limit]
+    else:
+        total = db.scalar(
+            select(func.count()).select_from(query.subquery())
+        ) or 0
+
+        rows = db.execute(
+            query
+            .order_by(score.desc(), Book.id.asc())
+            .offset(offset)
+            .limit(limit)
+        ).all()
+
+    results = []
+
+    for row in rows:
+        item = {
+            "id": row.id,
+            "title": row.title,
+            "author": row.author,
+            "score": int(row.score),
+        }
+
+        if pagerank_scores is not None:
+            item["pagerank"] = pagerank_scores[row.id]
+
+        results.append(item)
 
     return {
         "total": total,
         "offset": offset,
         "limit": limit,
-        "results": [
-            {
-                "id": row.id,
-                "title": row.title,
-                "author": row.author,
-                "score": int(row.score),
-            }
-            for row in rows
-        ],
+        "results": results,
     }
-
 
 def _base_query():
     # Frequence relative : occurrences par million de mots.
@@ -62,7 +83,7 @@ def _base_query():
     return query, score
 
 
-def search_books_v2(db, query, limit=20, offset=0):
+def search_books_v2(db, query, limit=20, offset=0, sort="occurrences"):
     conditions = []
 
     for language in LANGUAGES:
@@ -87,10 +108,10 @@ def search_books_v2(db, query, limit=20, offset=0):
     statement, score = _base_query()
     statement = statement.where(or_(*conditions))
 
-    return _response(db, statement, score, limit, offset)
+    return _response(db, statement, score, limit, offset, sort=sort)
 
 
-def search_regex_v2(db, pattern, limit=20, offset=0):
+def search_regex_v2(db, pattern, limit=20, offset=0, sort="occurrences"):
     pattern = validate_regex(pattern)
 
     # Comme la V1, proteger PostgreSQL des regex couteuses.
@@ -102,4 +123,4 @@ def search_regex_v2(db, pattern, limit=20, offset=0):
         TermV2.value.op("~*")(f"^({pattern})$")
     )
 
-    return _response(db, statement, score, limit, offset)
+    return _response(db, statement, score, limit, offset, sort=sort)
