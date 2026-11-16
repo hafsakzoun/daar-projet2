@@ -26,7 +26,13 @@ CHUNK_SIZE = 1024 * 1024
 
 
 def corpus_ready():
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(
+        bind=engine,
+        tables=[
+            table for table in Base.metadata.sorted_tables
+            if table.name not in {"terms", "postings"}
+        ],
+    )
     books, expected = load_manifest()
 
     with SessionLocal() as session:

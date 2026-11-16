@@ -2,6 +2,8 @@
 from sqlalchemy import CheckConstraint, ForeignKey, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Index
+from datetime import datetime
+from sqlalchemy import DateTime
 
 class Base(DeclarativeBase):
     pass
@@ -49,4 +51,22 @@ class Posting(Base):
         CheckConstraint("frequency > 0"),
     )
 Index("ix_postings_term_id", Posting.term_id)
-  
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    first_name: Mapped[str] = mapped_column(String(80))
+    email: Mapped[str] = mapped_column(String(254), unique=True)
+    password_hash: Mapped[str] = mapped_column(Text)
+
+
+class AuthSession(Base):
+    __tablename__ = "auth_sessions"
+
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

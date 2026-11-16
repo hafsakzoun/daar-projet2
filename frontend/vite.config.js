@@ -5,10 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': {
-        target: 'http://backend:8000',
-        changeOrigin: true,
-      },
+      '/api': process.env.API_PROXY_TARGET || 'http://127.0.0.1:8000',
     },
   },
 })

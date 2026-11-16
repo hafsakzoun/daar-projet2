@@ -18,3 +18,11 @@ class BookList(BaseModel):
     offset: int
     limit: int
     results: list[BookSummary]
+
+class BookRecommendation(BookSummary):
+    similarity: float
+
+
+class BookRecommendations(BaseModel):
+    book_id: int
+    results: list[BookRecommendation]

@@ -59,6 +59,7 @@ services:
       <<: *db_environment
     volumes:
       - corpus:/data
+      - ./data/generated:/data/generated:ro
     networks:
       - app_net
       - db_net
@@ -88,6 +89,8 @@ services:
   frontend:
     build:
       context: ./frontend
+    environment:
+      API_PROXY_TARGET: http://backend:8000
     ports:
       - "${FRONTEND_BIND:-127.0.0.1}:${FRONTEND_PORT:-5173}:5173"
     networks:

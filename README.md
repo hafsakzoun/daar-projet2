@@ -25,9 +25,26 @@ Validation réalisée :
 - 1 700 livres au-dessus de 10 000 mots ;
 - 1 700 livres indexés.
 
-L'index PostgreSQL contient :
+Ancien index V1 (conserve pour comparaison) :
 - 1 000 281 termes distincts ;
 - 15 546 923 associations livre-terme.
+
+Index V2 optimise :
+- 973 252 termes distincts ;
+- 10 753 306 associations livre-terme ;
+- recherche avec normalisation linguistique et stemming.
+
+## Démarrage avec Docker
+
+Depuis la racine du dépôt, avec Docker Compose installé :
+
+```bash
+docker compose up --build
+```
+
+Ouvrir l’interface sur <http://localhost:5173>. La documentation FastAPI est disponible sur <http://127.0.0.1:8000/docs>. Le démarrage utilise des valeurs par défaut et fonctionne sans fichier `.env`. Pour personnaliser les origines CORS des appels directs à FastAPI, utiliser `.env.example` comme modèle.
+
+## Prérequis pour le lancement sans Docker
 
 L'archive externe du corpus est disponible à l'adresse :
 
@@ -120,6 +137,10 @@ Les expressions régulières s'appliquent aux termes de l'index
 inversé, pas directement aux phrases complètes des livres.
 
 Catalogue :
+
+React envoie ses requêtes à `/api/v1`. Vite les transmet à FastAPI via le réseau Docker quand Compose est utilisé, et vers `http://127.0.0.1:8000` lors d’un lancement local sans Docker.
+
+Les ports Compose sont accessibles depuis la machine qui exécute Docker. Pour une démonstration depuis un autre appareil, il faudra rendre le port du frontend accessible sur le réseau local.
 
     GET /api/v1/books
     GET /api/v1/books/11
