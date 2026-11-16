@@ -1,0 +1,68 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-projet_2_daar}
+      POSTGRES_USER: ${POSTGRES_USER:-user_daar}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Mot de passe PostgreSQL requis}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - db_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-projet_2_daar}
+      DB_USER: ${POSTGRES_USER:-user_daar}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Mot de passe PostgreSQL requis}
+      AUTH_COOKIE_SECURE: "false"
+    volumes:
+      - graphdata:/data/generated:ro
+    networks:
+      - app_net
+      - db_net
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=4)"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    ports:
+      - "80:80"
+    networks:
+      - app_net
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+networks:
+  app_net:
+  db_net:
+
+volumes:
+  pgdata:
+  graphdata:
