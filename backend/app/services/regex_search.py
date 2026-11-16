@@ -3,6 +3,7 @@ import re
 from sqlalchemy import func, select, text
 
 from app.db.models import Book, Posting, Term
+from app.services.search_order import fetch_search_page
 
 
 def validate_regex(pattern: str) -> str:
@@ -23,8 +24,14 @@ def validate_regex(pattern: str) -> str:
     return pattern
 
 
-def search_regex(db, pattern: str, limit: int = 20,
-                 offset: int = 0):
+def search_regex(
+        db,
+        pattern: str,
+        limit: int = 20,
+        offset: int = 0,
+        *,
+        sort: str = "occurrences",
+    ):
     """Recherche les mots de l'index correspondant à une regex."""
     pattern = validate_regex(pattern)
 
@@ -50,12 +57,7 @@ def search_regex(db, pattern: str, limit: int = 20,
         select(func.count()).select_from(query.subquery())
     ) or 0
 
-    rows = db.execute(
-        query
-        .order_by(score.desc(), Book.id.asc())
-        .offset(offset)
-        .limit(limit)
-    ).all()
+    rows = fetch_search_page(db, query, score, Book.id, limit, offset, sort)
 
     return {
         "total": total,

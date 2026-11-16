@@ -194,7 +194,10 @@ function Results({
       ? (mode === 'regex' ? 'search/regex' : 'search')
       : 'books'
 
-    if (query) params.set('q', query)
+    if (query) {
+      params.set('q', query)
+      params.set('sort', sort)
+    }
 
     async function loadResults() {
       try {
@@ -242,7 +245,7 @@ function Results({
           <p role="status">
             {data.total === 0
               ? (query ? 'Aucun livre trouvé.' : 'Le catalogue est vide.')
-              : `${number.format(data.total)} ${data.total === 1 ? 'livre' : 'livres'}${query ? ' · Tri par occurrences' : ''}`}
+              : `${number.format(data.total)} ${data.total === 1 ? 'livre' : 'livres'}${query ? ` · Tri par ${sort === 'pagerank' ? 'PageRank' : 'occurrences'}` : ''}`}
           </p>
 
           {data.results.length > 0 && (
@@ -345,6 +348,7 @@ function App() {
   const [loggingOut, setLoggingOut] = useState(false)
   const [accountError, setAccountError] = useState('')
   const [activePanel, setActivePanel] = useState(null)
+  const [sort, setSort] = useState('occurrences')
   const [request, setRequest] = useState({
     query: '',
     mode: 'keyword',
@@ -673,9 +677,25 @@ function App() {
             : 'Essaie un mot du corpus, par exemple « history ».'}
         </p>
       </form>
+      {request.query && (
+        <label>
+          Trier par{' '}
+          <select
+            value={sort}
+            onChange={(event) => {
+              setSort(event.target.value)
+              setRequest((previous) => ({ ...previous, offset: 0 }))
+            }}
+          >
+            <option value="occurrences">Occurrences</option>
+            <option value="pagerank">PageRank</option>
+          </select>
+        </label>
+      )}
 
       <Results
-        key={`${request.id}:${request.offset}`}
+        key={`${request.id}:${request.offset}:${sort}`}
+        sort={sort}
         query={request.query}
         mode={request.mode}
         offset={request.offset}
