@@ -40,7 +40,11 @@ def _response(db, query, score, limit, offset):
 
 
 def _base_query():
-    score = func.sum(PostingV2.frequency).label("score")
+    # Frequence relative : occurrences par million de mots.
+    score = (
+        1_000_000.0 * func.sum(PostingV2.frequency)
+        / func.max(Book.word_count)
+    ).label("score")
 
     query = (
         select(

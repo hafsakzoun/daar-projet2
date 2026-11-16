@@ -10,7 +10,7 @@ from pathlib import Path
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 
-from app.db.models import Book, Posting
+from app.db.models import Book
 from app.db.session import SessionLocal, engine, DATABASE_URL
 from app.db.v2_models import BookV2, TermV2, PostingV2, V2Base
 from app.services.index_normalization import count_index_words
@@ -30,18 +30,14 @@ def build():
             select(Book).order_by(Book.id)
         ).all()
 
-        original_postings = session.scalar(
-            select(func.count()).select_from(Posting)
-        )
-
-    if len(books) != 1700 or not original_postings:
+    if len(books) != 1700:
         raise RuntimeError(
-            "Base source inattendue : index V1 absent ou incomplet."
+            f"Corpus incomplet : {len(books)}/1700 livres."
         )
 
     print(
         f"Base : {DATABASE_URL.database} | "
-        f"V1 : {len(books)} livres, {original_postings} postings",
+        f"{len(books)} livres disponibles",
         flush=True,
     )
 
