@@ -1,0 +1,9 @@
+mode,requete,livres_dans_filtre,repetitions,resultats,moyenne_ms,ecart_type_ms,min_ms,max_ms
+simple,alice,200,5,29,5.74,1.7,3.83,7.51
+regex,alice|rabbit,200,5,77,319.91,45.07,270.21,370.63
+simple,alice,500,5,61,109.38,235.01,3.42,529.78
+regex,alice|rabbit,500,5,179,294.48,31.69,265.04,341.24
+simple,alice,1000,5,154,5.92,0.46,5.48,6.65
+regex,alice|rabbit,1000,5,350,322.73,56.81,258.49,384.37
+simple,alice,1700,5,296,4.04,0.57,3.68,5.04
+regex,alice|rabbit,1700,5,617,315.89,10.1,308.08,330.84

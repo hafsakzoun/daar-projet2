@@ -1,0 +1,7 @@
+mode,requete,livres,repetitions,resultats,moyenne_ms,ecart_type_ms,mediane_ms,min_ms,max_ms
+simple,alice,1700,20,296,3.67,0.99,3.52,2.58,7.24
+simple,love,1700,20,1590,11.23,1.63,11.14,8.94,14.9
+simple,king,1700,20,1428,9.71,1.01,9.7,7.83,11.54
+regex,alice|rabbit,1700,20,617,325.95,36.14,323.6,248.22,412.3
+regex,love|heart,1700,20,1651,328.34,51.36,308.55,249.21,443.01
+regex,king|queen,1700,20,1506,313.02,37.25,297.78,254.9,416.32
