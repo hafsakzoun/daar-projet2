@@ -206,3 +206,29 @@ Résultats :
 
 Conclusion : installation et indexation reproductibles sur volumes vierges.
 La démonstration depuis plusieurs appareils reste à confirmer.
+
+## Validation Docker complete depuis zero — 16 novembre 2026
+
+Une seconde installation Docker independante a ete creee
+avec un clone Git et deux volumes neufs :
+- daar-v2-fresh_pgdata
+- daar-v2-fresh_corpus
+
+Resultats observes :
+- corpus-init : termine avec code 0
+- index-init : termine avec code 0
+- PostgreSQL : healthy
+- Backend FastAPI : healthy
+- Frontend React : HTTP 200
+- Livres installes : 1700
+- Livres indexes V2 : 1700
+- Postings V2 : 10753306
+- Postings V1 : 0
+- GET /api/v1/search?q=alice : HTTP 200, 309 livres
+- GET /api/v1/search/regex?q=alice%7Crabbit :
+  HTTP 200, 593 livres
+
+Conclusion :
+L'installation Docker complete depuis des volumes vierges
+fonctionne. Le corpus est installe, la V2 est construite
+sans index V1 et les recherches API fonctionnent.
