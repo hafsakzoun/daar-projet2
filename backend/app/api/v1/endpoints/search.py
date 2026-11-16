@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
@@ -6,6 +5,11 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.services.search import normalize_query, search_books
 from app.services.regex_search import search_regex, validate_regex
+from app.services.index_version import v2_ready
+from app.services.search_optimized import (
+    search_books_v2,
+    search_regex_v2,
+)
 
 
 router = APIRouter()
@@ -24,10 +28,16 @@ def search(
             detail="La recherche doit contenir au moins un mot.",
         )
 
+    if v2_ready(db):
+        return search_books_v2(db, q, limit, offset)
+
     return search_books(db, q, limit, offset)
 
 
-@router.get("/search/regex", summary="Recherche par regex")
+@router.get(
+    "/search/regex",
+    summary="Recherche Regex sur les racines en V2",
+)
 def regex_search(
     q: str = Query(min_length=1),
     limit: int = Query(default=20, ge=1, le=100),
@@ -43,7 +53,11 @@ def regex_search(
         ) from error
 
     try:
+        if v2_ready(db):
+            return search_regex_v2(db, q, limit, offset)
+
         return search_regex(db, q, limit, offset)
+
     except DBAPIError as error:
         db.rollback()
         raise HTTPException(
