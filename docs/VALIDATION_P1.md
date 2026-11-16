@@ -146,3 +146,42 @@ complète des performances.
 Le corpus déjà installé est vérifié avant un nouveau téléchargement.
 La reprise de l'indexation a été validée.
 La reprise partielle du téléchargement HTTP n'est pas implémentée.
+
+## 9. Validation indépendante du 16 novembre 2026
+
+Contrôle effectué sur les fichiers réels du volume Docker `corpus`,
+et non uniquement sur les métadonnées PostgreSQL.
+
+Méthode :
+- Lecture des 1 700 identifiants du manifeste `books.csv`.
+- Vérification de l'existence de chaque fichier texte.
+- Recalcul du SHA-256 à partir des octets du fichier.
+- Recalcul du nombre de mots par découpage sur les espaces (`split()`).
+- Comparaison avec le manifeste et contrôle du minimum de 10 000 mots.
+
+| Vérification | Résultat |
+|---|---:|
+| Livres attendus | 1 700 |
+| Fichiers vérifiés | 1 700 |
+| Fichiers manquants | 0 |
+| SHA-256 incorrects | 0 |
+| Livres sous 10 000 mots | 0 |
+| Écarts de comptage | 0 |
+
+La limitation mentionnée dans la section 3 concernant le recomptage
+indépendant des mots est donc levée pour ce corpus installé.
+
+Contrôle complémentaire de l'index PostgreSQL :
+
+| Indicateur | Résultat |
+|---|---:|
+| Livres en base | 1 700 |
+| Livres ayant au moins un posting | 1 700 |
+| Termes distincts | 1 000 281 |
+| Associations livre-terme | 15 546 923 |
+
+Tests backend exécutés avec la base isolée `daar_test` :
+37 réussis sur 37, en 0,73 seconde.
+
+Ces contrôles ne prouvent pas encore la reproductibilité complète
+sur une machine neuve ni l'absence d'index partiellement corrompu.
