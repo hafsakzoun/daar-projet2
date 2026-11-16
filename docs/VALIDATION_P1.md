@@ -185,3 +185,24 @@ Tests backend exécutés avec la base isolée `daar_test` :
 
 Ces contrôles ne prouvent pas encore la reproductibilité complète
 sur une machine neuve ni l'absence d'index partiellement corrompu.
+
+## Validation Docker sur volumes vierges — 16 novembre 2026
+
+Installation indépendante avec le projet Compose `daar-validation`.
+
+Résultats :
+- PostgreSQL initialisé sur un volume neuf.
+- Archive Gutenberg téléchargée et vérifiée.
+- 1700 livres copiés, aucun fichier manquant ou incorrect.
+- 1700 livres ajoutés dans PostgreSQL.
+- Index inversé entièrement reconstruit : index-init Exited (0).
+- 1 000 281 termes distincts.
+- 15 546 923 postings.
+- 1700 livres présents dans les postings.
+- Backend indépendant accessible sur le port 8001.
+- GET /api/v1/health : HTTP 200.
+- Recherche simple "alice" : 296 résultats.
+- Recherche Regex "alice|rabbit" : 617 résultats.
+
+Conclusion : installation et indexation reproductibles sur volumes vierges.
+La démonstration depuis plusieurs appareils reste à confirmer.
