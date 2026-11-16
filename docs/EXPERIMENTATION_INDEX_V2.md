@@ -46,3 +46,35 @@ ete evalue dans cet echantillon.
 
 La V2 est prometteuse. Une validation fonctionnelle et
 une migration controlee sont necessaires avant son adoption.
+
+## Validation sur les 1700 livres
+
+La V2 a ete construite integralement dans PostgreSQL.
+
+| Metrique | V1 | V2 |
+|---|---:|---:|
+| Livres | 1700 | 1700 |
+| Termes | 1000281 | 973252 |
+| Postings | 15546923 | 10753306 |
+| Taille postings (avec index SQL) | 1216 Mo | 873 Mo |
+| Taille termes (avec index SQL) | 98 Mo | 103 Mo |
+| Taille totale de ces tables | 1314 Mo | 976 Mo |
+
+Reduction des postings : 30,83 %.
+Reduction du stockage de ces tables : 25,72 %.
+
+La V2 utilise une tokenisation Unicode, des stopwords
+multilingues et le stemming Snowball.
+
+Le score de recherche est normalise par la longueur du
+document : occurrences pour un million de mots.
+
+Les recherches simples et Regex fonctionnent sur les
+1700 livres. La recherche Regex porte sur les racines,
+et non directement sur les formes originales des mots.
+
+Les 50 tests Python passent. La recherche HTTP a ete
+validee sur la V2.
+
+La V1 reste disponible pour les comparaisons et pour
+les composants qui n'ont pas encore migre vers V2.
