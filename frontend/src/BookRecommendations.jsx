@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-export default function BookRecommendations({ bookId }) {
+export default function BookRecommendations({ bookId, onSelectBook }) {
   const [results, setResults] = useState(null)
   const [error, setError] = useState('')
 
@@ -41,7 +41,14 @@ export default function BookRecommendations({ bookId }) {
         <ul>
           {results.map((book) => (
             <li key={book.id}>
-              {book.title} — {book.author} ({Math.round(book.similarity * 100)} %)
+              <button
+                type="button"
+                className="recommendations-title"
+                onClick={() => onSelectBook(book)}
+              >
+                {book.title}
+              </button>
+              <span> — {book.author} ({Math.round(book.similarity * 100)} %)</span>
             </li>
           ))}
         </ul>

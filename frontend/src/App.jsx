@@ -58,8 +58,57 @@ function useReadingActivity(userId) {
   return { activity: current, save, storageError }
 }
 
+function RecommendedBookDetails({ book }) {
+  const [details, setDetails] = useState(null)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    async function loadDetails() {
+      try {
+        const response = await fetch(`/api/v1/books/${book.id}`, {
+          signal: controller.signal,
+        })
+
+        if (!response.ok) {
+          throw new Error('Impossible de charger la fiche du livre.')
+        }
+
+        const data = await response.json()
+        if (!controller.signal.aborted) setDetails(data)
+      } catch {
+        if (!controller.signal.aborted) {
+          setError('Impossible de charger la fiche du livre.')
+        }
+      }
+    }
+
+    loadDetails()
+    return () => controller.abort()
+  }, [book.id])
+
+  return (
+    <section aria-label="Fiche du livre">
+      <p>{book.author}</p>
+      {error && <p role="alert">{error}</p>}
+      {!details && !error && <p role="status">Chargement de la fiche…</p>}
+
+      {details && (
+        <>
+          <p>Langue : {details.language}</p>
+          <p>{number.format(details.word_count)} mots</p>
+        </>
+      )}
+    </section>
+  )
+}
+
 function RecommendationsDrawer({ book, onClose }) {
   const dialogRef = useRef(null)
+  const [visitedBooks, setVisitedBooks] = useState([])
+  const currentBook = visitedBooks.at(-1) ?? book
+  const isViewingDetails = visitedBooks.length > 0
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -76,7 +125,15 @@ function RecommendationsDrawer({ book, onClose }) {
       <header className="recommendations-drawer__header">
         <div>
           <p className="recommendations-kicker">Lisière · Découverte</p>
-          <h2 id="recommendations-heading">Livres similaires</h2>
+          <h2 id="recommendations-heading">
+            {isViewingDetails ? currentBook.title : 'Livres similaires'}
+          </h2>
+
+          {!isViewingDetails && (
+            <p className="recommendations-source">
+              À partir de <cite>{book.title}</cite>
+            </p>
+          )}
           <p className="recommendations-source">
             À partir de <cite>{book.title}</cite>
           </p>
@@ -92,9 +149,27 @@ function RecommendationsDrawer({ book, onClose }) {
           </button>
         </form>
       </header>
-
       <div className="recommendations-drawer__body">
-        <BookRecommendations bookId={book.id} />
+        {isViewingDetails && (
+          <>
+            <button
+              type="button"
+              className="recommendations-title"
+              onClick={() => setVisitedBooks((books) => books.slice(0, -1))}
+            >
+              ← Retour
+            </button>
+            <RecommendedBookDetails key={currentBook.id} book={currentBook} />
+          </>
+        )}
+
+        <BookRecommendations
+          key={currentBook.id}
+          bookId={currentBook.id}
+          onSelectBook={(nextBook) => {
+            setVisitedBooks((books) => [...books, nextBook])
+          }}
+        />
       </div>
     </dialog>
   )
