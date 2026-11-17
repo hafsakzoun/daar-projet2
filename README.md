@@ -1,4 +1,4 @@
-# DAAR — Projet 2 : Lisière, moteur de recherche de livres
+# DAAR Projet 2 : Lisière, moteur de recherche de livres
 
 Projet de l'UE DAAR du Master Informatique de Sorbonne Université.
 
