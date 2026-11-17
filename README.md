@@ -25,7 +25,7 @@ Validation réalisée :
 - 1 700 livres au-dessus de 10 000 mots ;
 - 1 700 livres indexés.
 
-Ancien index V1 (conserve pour comparaison) :
+Ancien index V1 (retiré du code, chiffres gardés pour comparaison) :
 - 1 000 281 termes distincts ;
 - 15 546 923 associations livre-terme.
 
@@ -96,12 +96,23 @@ longs et nécessitent suffisamment d'espace disque.
 - Documentation API : http://localhost:8000/docs
 - Santé API : http://localhost:8000/api/v1/health
 
-Par défaut, les ports applicatifs sont publiés uniquement sur
-127.0.0.1. La démonstration sur plusieurs machines nécessitera
-une configuration réseau supplémentaire.
+Le frontend est compilé par Vite puis servi par nginx, qui relaie
+`/api` vers FastAPI sur le réseau Docker `app_net`.
 
-Le frontend actuel utilise le serveur de développement Vite.
-Un déploiement de production du frontend reste à préparer.
+Par défaut, l'application n'écoute que sur 127.0.0.1. Pour la
+démonstration sur plusieurs appareils (même Wi-Fi), l'ouvrir au réseau :
+
+```bash
+FRONTEND_BIND=0.0.0.0 docker compose up -d
+```
+
+puis ouvrir `http://<IP-du-serveur>:5173` sur les autres machines.
+
+Après une modification du code :
+
+```bash
+docker compose up -d --build backend frontend
+```
 
 ## Arrêt et conservation des données
 
@@ -138,7 +149,7 @@ inversé, pas directement aux phrases complètes des livres.
 
 Catalogue :
 
-React envoie ses requêtes à `/api/v1`. Vite les transmet à FastAPI via le réseau Docker quand Compose est utilisé, et vers `http://127.0.0.1:8000` lors d’un lancement local sans Docker.
+React envoie ses requêtes à `/api/v1`. Avec Compose, nginx les transmet à FastAPI ; avec `npm run dev` (sans Docker), le serveur Vite les transmet à `http://127.0.0.1:8000`.
 
 Les ports Compose sont accessibles depuis la machine qui exécute Docker. Pour une démonstration depuis un autre appareil, il faudra rendre le port du frontend accessible sur le réseau local.
 
@@ -164,7 +175,7 @@ Ne jamais lancer cette suite sur la base principale daar.
 Les dépendances de développement sont déclarées dans
 backend/requirements-dev.txt.
 
-La CI utilise backend/requirements-test.txt.
+La CI utilise backend/requirements-dev.txt.
 Le fichier .gitlab-ci.yml comporte les jobs backend_tests
 et frontend_build.
 
@@ -173,38 +184,68 @@ validation de la CI après les derniers commits.
 
 ## Performances
 
-Les recherches ont été mesurées sur 1 700 livres,
-avec 20 répétitions pour chacune des six requêtes.
+Voir `docs/PERFORMANCES_V2.md` (mesures V2, graphiques SVG) :
 
-Recherche simple : 3,67 à 11,23 ms en moyenne.
-Recherche Regex : 313,02 à 328,34 ms en moyenne.
+- mot-clé : 2 ms (100 livres) à 19 ms (1 700 livres), croissance linéaire ;
+- regex par automate : 25 à 32 ms avec préfixe littéral (1,1 s avant
+  optimisation), ~560 ms sans préfixe ; mêmes résultats que PostgreSQL ;
+- suggestions : 10 ms (1,3 s quand le graphe était un fichier JSON) ;
+- test de charge : ~270 requêtes/s, aucune erreur jusqu'à 16 clients.
 
-Ces mesures concernent les requêtes SQL, sans temps HTTP
-ni rendu React.
+Relancer les mesures :
 
-Fichiers de résultats :
-- docs/benchmark_p1_full.csv
-- docs/benchmark_p1_simple.svg
-- docs/benchmark_p1_regex.svg
-- docs/PERFORMANCES_P1.md
+```bash
+docker compose exec backend python -m scripts.benchmark_v2 --out /tmp/bench
+docker cp "$(docker compose ps -q backend)":/tmp/bench/. docs/benchmarks_v2/
+python3 scripts/plot_benchmark_v2.py docs/benchmarks_v2
+```
 
-Les comparaisons sur plusieurs tailles réelles de bases
-restent à compléter.
+Les mesures de la V1 restent dans `docs/PERFORMANCES_P1.md` pour comparaison.
 
-## Documentation et validation
+## Architecture des données
 
-Voir :
-- docs/VALIDATION_P1.md
-- docs/PERFORMANCES_P1.md
+| Donnée | Stockage |
+|---|---|
+| Texte des livres | fichiers `.txt`, volume Docker `corpus` |
+| Index inversé | PostgreSQL : `terms_v2` (racines), `postings_v2` (livre, racine, fréquence) |
+| Graphe de Jaccard | PostgreSQL : `book_similarities` (arêtes pondérées) |
+| Centralité PageRank | PostgreSQL : `book_scores` |
+| Comptes, favoris, historique | PostgreSQL : `users`, `user_favorites`, `search_history` |
 
-## Fonctionnalités restant à intégrer
+Chaîne d'initialisation (une seule commande, `docker compose up`) :
+`corpus-init` (télécharge et vérifie les 1 700 livres) → `index-init`
+(index inversé) → `graph-init` (Jaccard + PageRank, ~3 min) → `backend` → `frontend`.
+Chaque étape est sautée si son résultat existe déjà.
 
-- Calcul de similarité Jaccard
-- Graphe de similarité entre livres
-- PageRank et classement implicite
-- Recommandations de livres
-- Intégration complète du frontend
-- Démonstration sur plusieurs machines
+Choix d'indexation :
+
+- découpage en mots Unicode, minuscules, mots vides retirés, racinisation
+  Snowball (anglais, français, allemand) : `whales` et `whale` partagent une racine ;
+- le graphe de Jaccard compare le vocabulaire discriminant de chaque livre
+  (racines présentes dans 2 livres au moins et 50 % du corpus au plus), seuil 0,20,
+  plus les 5 plus proches voisins de chaque livre ;
+- la regex est exécutée par notre automate (Thompson + déterminisation à la
+  volée) sur les racines de l'index, gardées triées en mémoire.
+
+## Déploiement sur un serveur (AWS)
+
+```bash
+cp .env.example .env   # puis définir POSTGRES_PASSWORD
+docker compose -f compose.yaml -f compose.aws.yaml up -d
+```
+
+L'application est alors servie sur le port 80. Le premier lancement indexe les
+livres et calcule le graphe : une instance d'au moins 2 Go de mémoire est
+conseillée (besoin non mesuré précisément).
+
+## Fonctionnalités
+
+- Recherche par mot-clé et par RegEx (automate sur les racines de l'index)
+- Classement par fréquence normalisée ou par PageRank
+- Suggestions : voisins Jaccard des deux meilleurs résultats
+- Lecture du texte complet d'un livre
+- Comptes utilisateurs ; favoris et historique stockés dans PostgreSQL
+  (retrouvés sur n'importe quelle machine)
 
 ## Livraison
 
@@ -214,6 +255,8 @@ pour récupérer le corpus externe.
 Le corpus volumineux et les volumes PostgreSQL ne sont pas
 inclus dans l'archive de livraison.
 
-Une installation sur volumes vierges avait été validée avant
-les derniers changements. Une nouvelle vérification complète
-de reproductibilité reste à effectuer.
+Créer l'archive de rendu (≤ 30 Mo, sans `.env` ni données générées) :
+
+```bash
+scripts/make_archive.sh --noms NOM1-NOM2-NOM3 --rapport rapport.pdf --video video.mp4
+```

@@ -1,45 +1,64 @@
 """Recherches sur l'index inverse optimise V2."""
 
-from sqlalchemy import and_, func, or_, select, text
+import re
 
-from app.db.models import Book
+from sqlalchemy import and_, func, or_, select, text
+from sqlalchemy.exc import ProgrammingError
+
+from app.db.models import Book, BookScore
 from app.db.v2_models import PostingV2, TermV2
 from app.services.index_normalization import normalize_index_query
-from app.services.regex_search import validate_regex
 
+
+def validate_regex(pattern: str) -> str:
+    """Vérifie la syntaxe d'une expression régulière (variante PostgreSQL)."""
+    if not pattern or not pattern.strip():
+        raise ValueError("Expression régulière vide.")
+    if len(pattern) > 100:
+        raise ValueError("Expression régulière trop longue.")
+    try:
+        re.compile(pattern)
+    except re.error as error:
+        raise ValueError("Expression régulière invalide.") from error
+    return pattern
 
 LANGUAGES = ("en", "fr", "de", "ang")
 
 
+class PageRankUnavailable(RuntimeError):
+    """Le graphe de Jaccard n'a pas encore ete calcule."""
+
+
 def _response(db, query, score, limit, offset, sort="occurrences"):
-    pagerank_scores = None
+    """Execute la requete paginee et met en forme la reponse.
+
+    Le tri et la pagination sont faits par PostgreSQL : seuls les
+    `limit` livres de la page demandee sont transferes.
+    """
+    total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
 
     if sort == "pagerank":
-        from app.services.pagerank_scores import (
-            load_pagerank_scores,
-            sort_pagerank_rows,
+        try:
+            available = db.scalar(select(BookScore.book_id).limit(1))
+        except ProgrammingError:  # table absente
+            db.rollback()
+            available = None
+        if not available:
+            raise PageRankUnavailable(
+                "Scores PageRank indisponibles : le graphe n'est pas encore calcule."
+            )
+        pagerank = func.coalesce(func.max(BookScore.pagerank), 0.0).label("pagerank")
+        query = (
+            query.outerjoin(BookScore, BookScore.book_id == Book.id)
+            .add_columns(pagerank)
+            .order_by(pagerank.desc(), Book.id.asc())
         )
-
-        pagerank_scores = load_pagerank_scores()
-        all_rows = db.execute(query).all()
-        ordered = sort_pagerank_rows(all_rows, pagerank_scores)
-
-        total = len(ordered)
-        rows = ordered[offset:offset + limit]
     else:
-        total = db.scalar(
-            select(func.count()).select_from(query.subquery())
-        ) or 0
+        query = query.order_by(score.desc(), Book.id.asc())
 
-        rows = db.execute(
-            query
-            .order_by(score.desc(), Book.id.asc())
-            .offset(offset)
-            .limit(limit)
-        ).all()
+    rows = db.execute(query.offset(offset).limit(limit)).all()
 
     results = []
-
     for row in rows:
         item = {
             "id": row.id,
@@ -47,10 +66,8 @@ def _response(db, query, score, limit, offset, sort="occurrences"):
             "author": row.author,
             "score": int(row.score),
         }
-
-        if pagerank_scores is not None:
-            item["pagerank"] = pagerank_scores[row.id]
-
+        if sort == "pagerank":
+            item["pagerank"] = row.pagerank
         results.append(item)
 
     return {
@@ -59,6 +76,7 @@ def _response(db, query, score, limit, offset, sort="occurrences"):
         "limit": limit,
         "results": results,
     }
+
 
 def _base_query():
     # Frequence relative : occurrences par million de mots.
@@ -83,7 +101,9 @@ def _base_query():
     return query, score
 
 
-def search_books_v2(db, query, limit=20, offset=0, sort="occurrences"):
+def search_books_v2(
+    db, query, limit=20, offset=0, sort="occurrences", book_ids=None
+):
     conditions = []
 
     for language in LANGUAGES:
@@ -107,6 +127,9 @@ def search_books_v2(db, query, limit=20, offset=0, sort="occurrences"):
 
     statement, score = _base_query()
     statement = statement.where(or_(*conditions))
+    if book_ids is not None:
+        # Utilise par le benchmark pour simuler un corpus plus petit.
+        statement = statement.where(Book.id.in_(book_ids))
 
     return _response(db, statement, score, limit, offset, sort=sort)
 

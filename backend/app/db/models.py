@@ -1,7 +1,6 @@
 
 from sqlalchemy import CheckConstraint, ForeignKey, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import Index
 from datetime import datetime
 from sqlalchemy import DateTime
 
@@ -25,33 +24,6 @@ class Book(Base):
     )
 
 
-class Term(Base):
-    __tablename__ = "terms"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    value: Mapped[str] = mapped_column(
-        String(255), unique=True, index=True
-    )
-
-
-class Posting(Base):
-    __tablename__ = "postings"
-
-    book_id: Mapped[int] = mapped_column(
-        ForeignKey("books.id", ondelete="CASCADE"),
-        primary_key=True,
-    )
-    term_id: Mapped[int] = mapped_column(
-        ForeignKey("terms.id", ondelete="CASCADE"),
-        primary_key=True,
-    )
-    frequency: Mapped[int]
-
-    __table_args__ = (
-        CheckConstraint("frequency > 0"),
-    )
-Index("ix_postings_term_id", Posting.term_id)
-
 class User(Base):
     __tablename__ = "users"
 
@@ -70,3 +42,66 @@ class AuthSession(Base):
         index=True,
     )
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+class Favorite(Base):
+    """Livre mis en favori par un utilisateur (stocke en base,
+    donc retrouve sur n'importe quelle machine)."""
+
+    __tablename__ = "user_favorites"
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    book_id: Mapped[int] = mapped_column(
+        ForeignKey("books.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class SearchHistory(Base):
+    """Recherche lancee par un utilisateur connecte."""
+
+    __tablename__ = "search_history"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    query: Mapped[str] = mapped_column(String(200))
+    mode: Mapped[str] = mapped_column(String(10))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+    __table_args__ = (
+        CheckConstraint("mode IN ('keyword', 'regex')"),
+    )
+
+
+class BookSimilarity(Base):
+    """Arete du graphe de Jaccard (stockee dans les deux sens)."""
+
+    __tablename__ = "book_similarities"
+
+    book_id: Mapped[int] = mapped_column(
+        ForeignKey("books.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    neighbor_id: Mapped[int] = mapped_column(
+        ForeignKey("books.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    similarity: Mapped[float]
+
+
+class BookScore(Base):
+    """Centralite PageRank d'un livre dans le graphe de Jaccard."""
+
+    __tablename__ = "book_scores"
+
+    book_id: Mapped[int] = mapped_column(
+        ForeignKey("books.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    pagerank: Mapped[float]

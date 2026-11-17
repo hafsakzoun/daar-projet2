@@ -12,12 +12,12 @@ def seeded_db():
         os.environ.get("DB_NAME") != "daar_test"
         or os.environ.get("DAAR_TEST_DB") != "1"
     ):
-        pytest.fail(
+        pytest.skip(
             "Les tests d'intégration nécessitent "
             "DB_NAME=daar_test et DAAR_TEST_DB=1."
         )
 
-    from app.db.models import Base, Book, Term, Posting
+    from app.db.models import Base, Book
     from app.db.session import engine, SessionLocal
 
     # Remise à zéro uniquement de la base de test.
@@ -53,22 +53,6 @@ def seeded_db():
                 source_url="https://example.org/book13",
                 text_path="tests/book13.txt",
             ),
-        ])
-
-        db.add_all([
-            Term(id=1, value="alice"),
-            Term(id=2, value="rabbit"),
-        ])
-
-        db.flush()
-
-        db.add_all([
-            Posting(book_id=11, term_id=1, frequency=9),
-            Posting(book_id=12, term_id=1, frequency=5),
-            Posting(book_id=13, term_id=1, frequency=2),
-            Posting(book_id=11, term_id=2, frequency=1),
-            Posting(book_id=12, term_id=2, frequency=2),
-            Posting(book_id=13, term_id=2, frequency=4),
         ])
 
         db.commit()

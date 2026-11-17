@@ -1,0 +1,15 @@
+experience,variante,requete,resultats,moyenne_ms,ecart_type_ms,mediane_ms,min_ms,max_ms
+regex,automate,alic.*,391,28.3,3.33,26.53,25.73,35.12
+regex,postgresql,alic.*,391,111.32,2.17,110.64,108.95,114.66
+regex,automate,(love|heart),1651,24.81,1.89,25.49,22.43,26.97
+regex,postgresql,(love|heart),1651,178.51,9.93,175.1,168.5,193.71
+regex,automate,k.ng,1470,32.28,4.4,30.46,30.02,42.13
+regex,postgresql,k.ng,1470,108.34,0.57,108.3,107.6,109.09
+regex,automate,.*land,1683,562.75,74.37,515.86,491.13,676.6
+regex,postgresql,.*land,1683,214.34,9.42,213.74,198.79,229.95
+tri,occurrences,alice,309,2.45,0.15,2.45,2.27,2.73
+tri,pagerank,alice,309,2.77,0.11,2.76,2.65,2.97
+tri,occurrences,love,1612,6.07,1.13,5.49,5.29,8.39
+tri,pagerank,love,1612,10.2,3.18,8.43,7.76,16.12
+tri,occurrences,king,1469,6.68,0.84,6.3,5.8,7.91
+tri,pagerank,king,1469,8.29,1.76,7.61,6.86,11.24

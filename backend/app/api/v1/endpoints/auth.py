@@ -2,7 +2,8 @@ import os
 import secrets
 from datetime import datetime, timedelta, timezone
 from hashlib import sha256
-from typing import Annotated
+from typing import Annotated, Literal
+from urllib.parse import urlsplit
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pwdlib import PasswordHash
@@ -12,7 +13,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.db.models import AuthSession, User
+from app.db.models import AuthSession, Book, Favorite, SearchHistory, User
 from app.db.session import get_db
 
 
@@ -47,9 +48,18 @@ class PublicUser(BaseModel):
 
 
 def check_origin(request: Request) -> None:
+    """Protection CSRF : la requête doit venir du site lui-même.
+
+    On accepte l'origine si elle correspond à l'hôte demandé (même site,
+    quelle que soit l'adresse : localhost, IP du Wi-Fi, AWS…) ou si elle
+    figure dans CORS_ORIGINS.
+    """
     origin = request.headers.get("origin")
-    if origin is not None and origin not in settings.cors_origins:
-        raise HTTPException(status_code=403, detail="Origine non autorisée.")
+    if origin is None or origin in settings.cors_origins:
+        return
+    if urlsplit(origin).netloc == request.headers.get("host"):
+        return
+    raise HTTPException(status_code=403, detail="Origine non autorisée.")
 
 
 def hash_token(token: str) -> str:
@@ -162,8 +172,7 @@ def login(
     return public_user(user)
 
 
-@router.get("/me", response_model=PublicUser)
-def me(request: Request, response: Response, db: DbSession) -> PublicUser:
+def current_user(request: Request, db: DbSession) -> User:
     token = request.cookies.get(COOKIE_NAME)
     if not token:
         raise HTTPException(status_code=401, detail="Tu dois te connecter.")
@@ -179,7 +188,14 @@ def me(request: Request, response: Response, db: DbSession) -> PublicUser:
 
     if user is None:
         raise HTTPException(status_code=401, detail="Session expirée ou invalide.")
+    return user
 
+
+CurrentUser = Annotated[User, Depends(current_user)]
+
+
+@router.get("/me", response_model=PublicUser)
+def me(user: CurrentUser, response: Response) -> PublicUser:
     response.headers["Cache-Control"] = "no-store"
     return public_user(user)
 
@@ -200,3 +216,157 @@ def logout(request: Request, db: DbSession) -> Response:
         samesite="strict",
     )
     return response
+
+
+# ───────────── Favoris et historique (stockés en base) ─────────────
+# Ces routes sont sous /auth/me car le cookie de session
+# n'est envoyé que sur le chemin /api/v1/auth.
+
+HISTORY_LIMIT = 30
+_activity_tables_ready = False
+
+
+def ensure_activity_tables(db: Session) -> None:
+    """Crée les tables si la base a été restaurée depuis une ancienne
+    sauvegarde (ex. AWS) qui ne les contenait pas encore."""
+    global _activity_tables_ready
+    if _activity_tables_ready:
+        return
+    bind = db.get_bind()
+    Favorite.__table__.create(bind, checkfirst=True)
+    SearchHistory.__table__.create(bind, checkfirst=True)
+    _activity_tables_ready = True
+
+
+class FavoriteOut(BaseModel):
+    id: int
+    title: str
+    author: str
+
+
+class HistoryInput(BaseModel):
+    query: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, min_length=1, max_length=200),
+    ]
+    mode: Literal["keyword", "regex"]
+
+
+class HistoryOut(BaseModel):
+    id: int
+    query: str
+    mode: str
+    date: datetime
+
+
+@router.get("/me/favorites", response_model=list[FavoriteOut])
+def list_favorites(user: CurrentUser, db: DbSession) -> list[FavoriteOut]:
+    ensure_activity_tables(db)
+    rows = db.execute(
+        select(Book.id, Book.title, Book.author)
+        .join(Favorite, Favorite.book_id == Book.id)
+        .where(Favorite.user_id == user.id)
+        .order_by(Favorite.created_at.desc())
+    ).all()
+    return [FavoriteOut(id=r.id, title=r.title, author=r.author) for r in rows]
+
+
+@router.put(
+    "/me/favorites/{book_id}",
+    status_code=204,
+    dependencies=[Depends(check_origin)],
+)
+def add_favorite(book_id: int, user: CurrentUser, db: DbSession) -> Response:
+    ensure_activity_tables(db)
+    if db.get(Book, book_id) is None:
+        raise HTTPException(status_code=404, detail="Livre introuvable")
+
+    db.execute(
+        insert(Favorite)
+        .values(
+            user_id=user.id,
+            book_id=book_id,
+            created_at=datetime.now(timezone.utc),
+        )
+        .on_conflict_do_nothing()
+    )
+    db.commit()
+    return Response(status_code=204)
+
+
+@router.delete(
+    "/me/favorites/{book_id}",
+    status_code=204,
+    dependencies=[Depends(check_origin)],
+)
+def remove_favorite(book_id: int, user: CurrentUser, db: DbSession) -> Response:
+    ensure_activity_tables(db)
+    db.execute(
+        delete(Favorite).where(
+            Favorite.user_id == user.id,
+            Favorite.book_id == book_id,
+        )
+    )
+    db.commit()
+    return Response(status_code=204)
+
+
+@router.get("/me/history", response_model=list[HistoryOut])
+def list_history(user: CurrentUser, db: DbSession) -> list[HistoryOut]:
+    ensure_activity_tables(db)
+    entries = db.scalars(
+        select(SearchHistory)
+        .where(SearchHistory.user_id == user.id)
+        .order_by(SearchHistory.created_at.desc(), SearchHistory.id.desc())
+        .limit(HISTORY_LIMIT)
+    ).all()
+    return [
+        HistoryOut(id=e.id, query=e.query, mode=e.mode, date=e.created_at)
+        for e in entries
+    ]
+
+
+@router.post(
+    "/me/history",
+    status_code=201,
+    response_model=HistoryOut,
+    dependencies=[Depends(check_origin)],
+)
+def add_history(payload: HistoryInput, user: CurrentUser, db: DbSession) -> HistoryOut:
+    ensure_activity_tables(db)
+    entry = SearchHistory(
+        user_id=user.id,
+        query=payload.query,
+        mode=payload.mode,
+        created_at=datetime.now(timezone.utc),
+    )
+    db.add(entry)
+    db.flush()
+
+    # On ne garde que les 30 dernières recherches.
+    keep = (
+        select(SearchHistory.id)
+        .where(SearchHistory.user_id == user.id)
+        .order_by(SearchHistory.created_at.desc(), SearchHistory.id.desc())
+        .limit(HISTORY_LIMIT)
+    )
+    db.execute(
+        delete(SearchHistory).where(
+            SearchHistory.user_id == user.id,
+            SearchHistory.id.not_in(keep),
+        )
+    )
+    db.commit()
+    return HistoryOut(id=entry.id, query=entry.query, mode=entry.mode, date=entry.created_at)
+
+
+@router.delete(
+    "/me/history",
+    status_code=204,
+    dependencies=[Depends(check_origin)],
+)
+def clear_history(user: CurrentUser, db: DbSession) -> Response:
+    ensure_activity_tables(db)
+    db.execute(delete(SearchHistory).where(SearchHistory.user_id == user.id))
+    db.commit()
+    return Response(status_code=204)

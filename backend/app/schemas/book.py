@@ -26,3 +26,10 @@ class BookRecommendation(BookSummary):
 class BookRecommendations(BaseModel):
     book_id: int
     results: list[BookRecommendation]
+
+
+class BookText(BookSummary):
+    offset: int
+    length: int
+    total: int
+    text: str

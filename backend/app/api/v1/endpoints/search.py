@@ -1,21 +1,11 @@
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.services.search import normalize_query, search_books
-from app.services.regex_search import search_regex, validate_regex
 from app.services.index_version import v2_ready
-from app.services.pagerank_scores import PageRankUnavailable
-from app.services.search_optimized import (
-    search_books_v2,
-    search_regex_v2,
-)
-
-
-
+from app.services.search_optimized import PageRankUnavailable, search_books_v2
 from app.services.automate_v2 import AutomateV2, RegexError
 from app.services.regex_automate_search_v2 import (
     search_regex_automate_v2,
@@ -33,25 +23,24 @@ def search(
     sort: Literal["occurrences", "pagerank"] = Query(default="occurrences"),
     db: Session = Depends(get_db),
 ):
-    if not normalize_query(q):
+    # Une requête composée uniquement de mots vides (« the ») renvoie
+    # simplement 0 résultat ; seule une requête vide est refusée.
+    if not q.strip():
         raise HTTPException(
             status_code=400,
             detail="La recherche doit contenir au moins un mot.",
         )
 
-    if v2_ready(db):
-        try:
-            return search_books_v2(db, q, limit, offset, sort=sort)
-        except PageRankUnavailable as error:
-            raise HTTPException(status_code=503, detail=str(error)) from error
-
-    if sort == "pagerank":
+    if not v2_ready(db):
         raise HTTPException(
             status_code=503,
-            detail="Index V2 indisponible pour le tri PageRank.",
+            detail="Index en cours de construction.",
         )
 
-    return search_books(db, q, limit, offset)
+    try:
+        return search_books_v2(db, q, limit, offset, sort=sort)
+    except PageRankUnavailable as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
 
 
 @router.get(
@@ -78,7 +67,7 @@ def regex_search(
     if not v2_ready(db):
         raise HTTPException(
             status_code=503,
-            detail="Index V2 indisponible.",
+            detail="Index en cours de construction.",
         )
 
     try:

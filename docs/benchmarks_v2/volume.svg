@@ -1,0 +1,62 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='760' height='440' viewBox='0 0 760 440'>
+<rect width='100%' height='100%' fill='#ffffff'/>
+<text x='76' y='32' font-family='Helvetica, Arial, sans-serif' font-size='18' font-weight='600' fill='#0b0b0b'>Recherche par mot-clé selon la taille du corpus</text>
+<text x='76' y='54' font-family='Helvetica, Arial, sans-serif' font-size='12.5' fill='#52514e'>Index V2 PostgreSQL — moyenne ± écart-type</text>
+<line x1='76' x2='610' y1='368.0' y2='368.0' stroke='#e4e3df' stroke-width='1'/>
+<text x='68' y='372.0' text-anchor='end' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>0</text>
+<line x1='76' x2='610' y1='295.5' y2='295.5' stroke='#e4e3df' stroke-width='1'/>
+<text x='68' y='299.5' text-anchor='end' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>10</text>
+<line x1='76' x2='610' y1='223.0' y2='223.0' stroke='#e4e3df' stroke-width='1'/>
+<text x='68' y='227.0' text-anchor='end' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>20</text>
+<line x1='76' x2='610' y1='150.5' y2='150.5' stroke='#e4e3df' stroke-width='1'/>
+<text x='68' y='154.5' text-anchor='end' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>30</text>
+<line x1='76' x2='610' y1='78.0' y2='78.0' stroke='#e4e3df' stroke-width='1'/>
+<text x='68' y='82.0' text-anchor='end' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>40</text>
+<text transform='translate(18 223.0) rotate(-90)' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11.5' fill='#52514e'>Temps de réponse (ms)</text>
+<text x='121.52941176470588' y='386' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>100</text>
+<text x='165.8235294117647' y='386' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>250</text>
+<text x='239.64705882352942' y='386' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>500</text>
+<text x='387.29411764705884' y='386' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>1 000</text>
+<text x='594.0' y='386' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>1 700</text>
+<text x='343.0' y='408' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11.5' fill='#52514e'>Nombre de livres indexés</text>
+<line x1='76' x2='610' y1='368' y2='368' stroke='#52514e' stroke-width='1'/>
+<polyline points='121.5,349.1 165.8,336.2 239.6,323.1 387.3,288.2 594.0,244.0' fill='none' stroke='#2a78d6' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'/>
+<line x1='121.52941176470588' x2='121.52941176470588' y1='353.645' y2='344.51' stroke='#2a78d6' stroke-width='1.5' opacity='0.55'/>
+<circle cx='121.52941176470588' cy='349.0775' r='4' fill='#2a78d6' stroke='#ffffff' stroke-width='2'><title>alice : 2.6 ms ± 0.6</title></circle>
+<line x1='165.8235294117647' x2='165.8235294117647' y1='340.595' y2='331.895' stroke='#2a78d6' stroke-width='1.5' opacity='0.55'/>
+<circle cx='165.8235294117647' cy='336.245' r='4' fill='#2a78d6' stroke='#ffffff' stroke-width='2'><title>alice : 4.4 ms ± 0.6</title></circle>
+<line x1='239.64705882352942' x2='239.64705882352942' y1='327.835' y2='318.40999999999997' stroke='#2a78d6' stroke-width='1.5' opacity='0.55'/>
+<circle cx='239.64705882352942' cy='323.1225' r='4' fill='#2a78d6' stroke='#ffffff' stroke-width='2'><title>alice : 6.2 ms ± 0.7</title></circle>
+<line x1='387.29411764705884' x2='387.29411764705884' y1='302.605' y2='273.895' stroke='#2a78d6' stroke-width='1.5' opacity='0.55'/>
+<circle cx='387.29411764705884' cy='288.25' r='4' fill='#2a78d6' stroke='#ffffff' stroke-width='2'><title>alice : 11.0 ms ± 2.0</title></circle>
+<line x1='594.0' x2='594.0' y1='276.1425' y2='211.90749999999997' stroke='#2a78d6' stroke-width='1.5' opacity='0.55'/>
+<circle cx='594.0' cy='244.025' r='4' fill='#2a78d6' stroke='#ffffff' stroke-width='2'><title>alice : 17.1 ms ± 4.4</title></circle>
+<polyline points='121.5,352.0 165.8,324.6 239.6,298.5 387.3,281.9 594.0,231.8' fill='none' stroke='#eb6834' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'/>
+<line x1='121.52941176470588' x2='121.52941176470588' y1='352.9925' y2='350.9625' stroke='#eb6834' stroke-width='1.5' opacity='0.55'/>
+<circle cx='121.52941176470588' cy='351.9775' r='4' fill='#eb6834' stroke='#ffffff' stroke-width='2'><title>love : 2.2 ms ± 0.1</title></circle>
+<line x1='165.8235294117647' x2='165.8235294117647' y1='329.3575' y2='319.9325' stroke='#eb6834' stroke-width='1.5' opacity='0.55'/>
+<circle cx='165.8235294117647' cy='324.645' r='4' fill='#eb6834' stroke='#ffffff' stroke-width='2'><title>love : 6.0 ms ± 0.7</title></circle>
+<line x1='239.64705882352942' x2='239.64705882352942' y1='327.4' y2='269.69' stroke='#eb6834' stroke-width='1.5' opacity='0.55'/>
+<circle cx='239.64705882352942' cy='298.545' r='4' fill='#eb6834' stroke='#ffffff' stroke-width='2'><title>love : 9.6 ms ± 4.0</title></circle>
+<line x1='387.29411764705884' x2='387.29411764705884' y1='286.7275' y2='277.1575' stroke='#eb6834' stroke-width='1.5' opacity='0.55'/>
+<circle cx='387.29411764705884' cy='281.9425' r='4' fill='#eb6834' stroke='#ffffff' stroke-width='2'><title>love : 11.9 ms ± 0.7</title></circle>
+<line x1='594.0' x2='594.0' y1='259.105' y2='204.44' stroke='#eb6834' stroke-width='1.5' opacity='0.55'/>
+<circle cx='594.0' cy='231.7725' r='4' fill='#eb6834' stroke='#ffffff' stroke-width='2'><title>love : 18.8 ms ± 3.8</title></circle>
+<polyline points='121.5,352.5 165.8,325.9 239.6,303.4 387.3,275.7 594.0,227.9' fill='none' stroke='#1baf7a' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'/>
+<line x1='121.52941176470588' x2='121.52941176470588' y1='353.4275' y2='351.5425' stroke='#1baf7a' stroke-width='1.5' opacity='0.55'/>
+<circle cx='121.52941176470588' cy='352.485' r='4' fill='#1baf7a' stroke='#ffffff' stroke-width='2'><title>king : 2.1 ms ± 0.1</title></circle>
+<line x1='165.8235294117647' x2='165.8235294117647' y1='332.8375' y2='318.9175' stroke='#1baf7a' stroke-width='1.5' opacity='0.55'/>
+<circle cx='165.8235294117647' cy='325.8775' r='4' fill='#1baf7a' stroke='#ffffff' stroke-width='2'><title>king : 5.8 ms ± 1.0</title></circle>
+<line x1='239.64705882352942' x2='239.64705882352942' y1='309.3475' y2='297.4575' stroke='#1baf7a' stroke-width='1.5' opacity='0.55'/>
+<circle cx='239.64705882352942' cy='303.40250000000003' r='4' fill='#1baf7a' stroke='#ffffff' stroke-width='2'><title>king : 8.9 ms ± 0.8</title></circle>
+<line x1='387.29411764705884' x2='387.29411764705884' y1='301.59000000000003' y2='249.825' stroke='#1baf7a' stroke-width='1.5' opacity='0.55'/>
+<circle cx='387.29411764705884' cy='275.7075' r='4' fill='#1baf7a' stroke='#ffffff' stroke-width='2'><title>king : 12.7 ms ± 3.6</title></circle>
+<line x1='594.0' x2='594.0' y1='255.625' y2='200.23499999999999' stroke='#1baf7a' stroke-width='1.5' opacity='0.55'/>
+<circle cx='594.0' cy='227.93' r='4' fill='#1baf7a' stroke='#ffffff' stroke-width='2'><title>king : 19.3 ms ± 3.8</title></circle>
+<rect x='634' y='75' width='12' height='12' rx='2' fill='#2a78d6'/>
+<text x='652' y='85' font-family='Helvetica, Arial, sans-serif' font-size='12' fill='#0b0b0b'>alice</text>
+<rect x='634' y='97' width='12' height='12' rx='2' fill='#eb6834'/>
+<text x='652' y='107' font-family='Helvetica, Arial, sans-serif' font-size='12' fill='#0b0b0b'>love</text>
+<rect x='634' y='119' width='12' height='12' rx='2' fill='#1baf7a'/>
+<text x='652' y='129' font-family='Helvetica, Arial, sans-serif' font-size='12' fill='#0b0b0b'>king</text>
+</svg>

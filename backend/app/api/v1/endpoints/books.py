@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select
+from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import Session
-import json
 from pathlib import Path
 
-from app.db.models import Book
+from app.db.models import Book, BookSimilarity
 from app.db.session import get_db
 from app.schemas.book import (
     BookDetail,
@@ -12,11 +12,12 @@ from app.schemas.book import (
     BookRecommendation,
     BookRecommendations,
     BookSummary,
+    BookText,
 )
 
 router = APIRouter()
 
-GRAPH_PATH = Path("/data/generated/graph-pilot.json")
+CORPUS_DIR = Path("/data/books")
 
 
 @router.get(
@@ -84,6 +85,46 @@ def get_book(
     )
 
 @router.get(
+    "/books/{book_id}/text",
+    response_model=BookText,
+    summary="Lire le texte d'un livre",
+)
+def read_book_text(
+    book_id: int,
+    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=40_000, ge=1, le=200_000),
+    db: Session = Depends(get_db),
+) -> BookText:
+    """Renvoie un extrait du texte, pagine en caracteres.
+
+    Certains livres depassent 4 Mo : on n'envoie qu'une tranche a la fois.
+    """
+    book = db.get(Book, book_id)
+    if book is None:
+        raise HTTPException(status_code=404, detail="Livre introuvable")
+
+    path = CORPUS_DIR / f"{book_id}.txt"
+    try:
+        content = path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Le texte de ce livre est indisponible",
+        ) from exc
+
+    chunk = content[offset : offset + limit]
+    return BookText(
+        id=book.id,
+        title=book.title,
+        author=book.author,
+        offset=offset,
+        length=len(chunk),
+        total=len(content),
+        text=chunk,
+    )
+
+
+@router.get(
     "/books/{book_id}/recommendations",
     response_model=BookRecommendations,
     summary="Recommander des livres similaires",
@@ -96,42 +137,27 @@ def recommend_books(
     if db.get(Book, book_id) is None:
         raise HTTPException(status_code=404, detail="Livre introuvable")
 
+    # Voisins du livre dans le graphe de Jaccard, du plus proche au plus loin.
     try:
-        graph = json.loads(GRAPH_PATH.read_text(encoding="utf-8"))["graph"]
-    except (OSError, ValueError, KeyError) as exc:
+        rows = db.execute(
+            select(Book.id, Book.title, Book.author, BookSimilarity.similarity)
+            .join(BookSimilarity, BookSimilarity.neighbor_id == Book.id)
+            .where(BookSimilarity.book_id == book_id)
+            .order_by(BookSimilarity.similarity.desc(), Book.id)
+            .limit(limit)
+        ).all()
+    except ProgrammingError as exc:  # table absente : graphe jamais calcule
         raise HTTPException(
             status_code=503,
             detail="Le graphe de recommandations est indisponible",
         ) from exc
 
-    neighbors = graph.get(str(book_id))
-    if neighbors is None:
-        raise HTTPException(
-            status_code=503,
-            detail="Ce livre ne figure pas encore dans le graphe de recommandations",
-        )
-
-    ranked_neighbors = sorted(
-        ((int(neighbor_id), score) for neighbor_id, score in neighbors.items()),
-        key=lambda item: (-item[1], item[0]),
+    return BookRecommendations(
+        book_id=book_id,
+        results=[
+            BookRecommendation(
+                id=row.id, title=row.title, author=row.author, similarity=row.similarity
+            )
+            for row in rows
+        ],
     )
-
-    if not ranked_neighbors:
-        return BookRecommendations(book_id=book_id, results=[])
-
-    neighbor_ids = [neighbor_id for neighbor_id, _ in ranked_neighbors]
-    books = db.scalars(select(Book).where(Book.id.in_(neighbor_ids))).all()
-    books_by_id = {book.id: book for book in books}
-
-    results = [
-        BookRecommendation(
-            id=neighbor_id,
-            title=books_by_id[neighbor_id].title,
-            author=books_by_id[neighbor_id].author,
-            similarity=score,
-        )
-        for neighbor_id, score in ranked_neighbors
-        if neighbor_id in books_by_id
-    ]
-
-    return BookRecommendations(book_id=book_id, results=results[:limit])

@@ -1,3 +1,10 @@
+# Une seule image backend, réutilisée par les trois services
+# d'initialisation (corpus, index, graphe) et par l'API.
+x-backend-image: &backend-image
+  build:
+    context: ./backend
+  image: lisiere-backend:latest
+
 services:
   db:
     image: postgres:16
@@ -5,6 +12,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-daar}
       POSTGRES_USER: ${POSTGRES_USER:-daar_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-daar_dev_only}
+    restart: unless-stopped
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
@@ -16,8 +24,7 @@ services:
       retries: 10
 
   corpus-init:
-    build:
-      context: ./backend
+    <<: *backend-image
     environment: &db_environment
       DB_HOST: db
       DB_PORT: 5432
@@ -36,8 +43,7 @@ services:
     restart: "no"
 
   index-init:
-    build:
-      context: ./backend
+    <<: *backend-image
     environment:
       <<: *db_environment
     volumes:
@@ -51,62 +57,41 @@ services:
     restart: "no"
 
 
+  # Graphe de Jaccard + PageRank, stockes dans PostgreSQL
+  # (tables book_similarities et book_scores). ~3 min au premier lancement.
   graph-init:
-    build:
-      context: ./backend
+    <<: *backend-image
     environment:
       <<: *db_environment
-      GRAPH_LIMIT: ${GRAPH_LIMIT:-}
       GRAPH_THRESHOLD: ${GRAPH_THRESHOLD:-0.20}
-    volumes:
-      - graphdata:/data/generated
+      GRAPH_MAX_DF: ${GRAPH_MAX_DF:-0.5}
+      GRAPH_MIN_NEIGHBORS: ${GRAPH_MIN_NEIGHBORS:-5}
     networks:
       - db_net
     depends_on:
       index-init:
         condition: service_completed_successfully
-    command:
-      - sh
-      - -ec
-      - |
-          if [ -s /data/generated/graph-pilot.json ] && python -m scripts.graph_cache_valid; then
-            echo "Graphe deja disponible"
-            exit 0
-          fi
-          set --
-          if [ -n "$$GRAPH_LIMIT" ]; then
-            set -- --limit "$$GRAPH_LIMIT"
-          fi
-          python -m scripts.build_graph "$$@" --threshold "$$GRAPH_THRESHOLD" > /data/generated/.graph-pilot.json.tmp
-          python -m json.tool /data/generated/.graph-pilot.json.tmp > /dev/null
-          mv /data/generated/.graph-pilot.json.tmp /data/generated/graph-pilot.json
+    command: ["python", "-m", "scripts.build_graph"]
     restart: "no"
 
   backend:
-    build:
-      context: ./backend
+    <<: *backend-image
     ports:
       - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
     environment:
       <<: *db_environment
+      # Charge les racines de l'index en memoire au demarrage (RegEx).
+      PRELOAD_VOCABULARY: "1"
     volumes:
-      - corpus:/data
-      - graphdata:/data/generated:ro
+      # Textes des livres (lecture seule) pour la page de lecture.
+      - corpus:/data:ro
     networks:
       - app_net
       - db_net
     depends_on:
       graph-init:
         condition: service_completed_successfully
-    command:
-      - python
-      - -m
-      - uvicorn
-      - main:app
-      - --host
-      - 0.0.0.0
-      - --port
-      - "8000"
+    restart: unless-stopped
     healthcheck:
       test:
         - CMD
@@ -121,25 +106,23 @@ services:
   frontend:
     build:
       context: ./frontend
-    environment:
-      API_PROXY_TARGET: http://backend:8000
+    image: lisiere-frontend:latest
     ports:
-      - "${FRONTEND_BIND:-127.0.0.1}:${FRONTEND_PORT:-5173}:5173"
+      # FRONTEND_BIND=0.0.0.0 pour ouvrir l'application aux autres
+      # machines du réseau (démonstration sur plusieurs appareils).
+      - "${FRONTEND_BIND:-127.0.0.1}:${FRONTEND_PORT:-5173}:80"
     networks:
       - app_net
     depends_on:
       backend:
         condition: service_healthy
     healthcheck:
-      test:
-        - CMD
-        - node
-        - -e
-        - "fetch('http://127.0.0.1:5173/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 20s
+      start_period: 10s
+    restart: unless-stopped
 
 networks:
   app_net:
@@ -148,4 +131,3 @@ networks:
 volumes:
   pgdata:
   corpus:
-  graphdata:

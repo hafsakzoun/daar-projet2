@@ -1,0 +1,57 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='760' height='440' viewBox='0 0 760 440'>
+<rect width='100%' height='100%' fill='#ffffff'/>
+<text x='76' y='32' font-family='Helvetica, Arial, sans-serif' font-size='18' font-weight='600' fill='#0b0b0b'>Recherche RegEx : automate vs PostgreSQL</text>
+<text x='76' y='54' font-family='Helvetica, Arial, sans-serif' font-size='12.5' fill='#52514e'>1 700 livres — temps total de la requête, moyenne ± écart-type</text>
+<line x1='76' x2='610' y1='368.0' y2='368.0' stroke='#e4e3df' stroke-width='1'/>
+<text x='68' y='372.0' text-anchor='end' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>0</text>
+<line x1='76' x2='610' y1='295.5' y2='295.5' stroke='#e4e3df' stroke-width='1'/>
+<text x='68' y='299.5' text-anchor='end' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>200</text>
+<line x1='76' x2='610' y1='223.0' y2='223.0' stroke='#e4e3df' stroke-width='1'/>
+<text x='68' y='227.0' text-anchor='end' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>400</text>
+<line x1='76' x2='610' y1='150.5' y2='150.5' stroke='#e4e3df' stroke-width='1'/>
+<text x='68' y='154.5' text-anchor='end' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>600</text>
+<line x1='76' x2='610' y1='78.0' y2='78.0' stroke='#e4e3df' stroke-width='1'/>
+<text x='68' y='82.0' text-anchor='end' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>800</text>
+<text transform='translate(18 223.0) rotate(-90)' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11.5' fill='#52514e'>Temps de réponse (ms)</text>
+<path d='M104.275,368 V361.74125 Q104.275,357.74125 108.275,357.74125 H145.25 Q149.25,357.74125 149.25,361.74125 V368 Z' fill='#2a78d6'><title>Automate (Python) — alic.* : 28.3 ms ± 3.3</title></path>
+<line x1='126.7625' x2='126.7625' y1='358.948375' y2='356.534125' stroke='#0b0b0b' stroke-width='1.2'/>
+<line x1='122.7625' x2='130.7625' y1='356.534125' y2='356.534125' stroke='#0b0b0b' stroke-width='1.2'/>
+<text x='126.7625' y='350.534125' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='10.5' fill='#0b0b0b'>28</text>
+<path d='M151.25,368 V331.6465 Q151.25,327.6465 155.25,327.6465 H192.225 Q196.225,327.6465 196.225,331.6465 V368 Z' fill='#eb6834'><title>Regex PostgreSQL — alic.* : 111.3 ms ± 2.2</title></path>
+<line x1='173.7375' x2='173.7375' y1='328.433125' y2='326.859875' stroke='#0b0b0b' stroke-width='1.2'/>
+<line x1='169.7375' x2='177.7375' y1='326.859875' y2='326.859875' stroke='#0b0b0b' stroke-width='1.2'/>
+<text x='173.7375' y='320.859875' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='10.5' fill='#0b0b0b'>111</text>
+<text x='150.25' y='386' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11.5' fill='#0b0b0b'>alic.*</text>
+<path d='M232.775,368 V363.006375 Q232.775,359.006375 236.775,359.006375 H273.75 Q277.75,359.006375 277.75,363.006375 V368 Z' fill='#2a78d6'><title>Automate (Python) — (love|heart) : 24.8 ms ± 1.9</title></path>
+<line x1='255.2625' x2='255.2625' y1='359.6915' y2='358.32125' stroke='#0b0b0b' stroke-width='1.2'/>
+<line x1='251.2625' x2='259.2625' y1='358.32125' y2='358.32125' stroke='#0b0b0b' stroke-width='1.2'/>
+<text x='255.2625' y='352.32125' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='10.5' fill='#0b0b0b'>25</text>
+<path d='M279.75,368 V307.290125 Q279.75,303.290125 283.75,303.290125 H320.725 Q324.725,303.290125 324.725,307.290125 V368 Z' fill='#eb6834'><title>Regex PostgreSQL — (love|heart) : 178.5 ms ± 9.9</title></path>
+<line x1='302.2375' x2='302.2375' y1='306.88975' y2='299.6905' stroke='#0b0b0b' stroke-width='1.2'/>
+<line x1='298.2375' x2='306.2375' y1='299.6905' y2='299.6905' stroke='#0b0b0b' stroke-width='1.2'/>
+<text x='302.2375' y='293.6905' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='10.5' fill='#0b0b0b'>179</text>
+<text x='278.75' y='386' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11.5' fill='#0b0b0b'>(love|heart)</text>
+<path d='M361.275,368 V360.2985 Q361.275,356.2985 365.275,356.2985 H402.25 Q406.25,356.2985 406.25,360.2985 V368 Z' fill='#2a78d6'><title>Automate (Python) — k.ng : 32.3 ms ± 4.4</title></path>
+<line x1='383.7625' x2='383.7625' y1='357.8935' y2='354.7035' stroke='#0b0b0b' stroke-width='1.2'/>
+<line x1='379.7625' x2='387.7625' y1='354.7035' y2='354.7035' stroke='#0b0b0b' stroke-width='1.2'/>
+<text x='383.7625' y='348.7035' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='10.5' fill='#0b0b0b'>32</text>
+<path d='M408.25,368 V332.72675 Q408.25,328.72675 412.25,328.72675 H449.225 Q453.225,328.72675 453.225,332.72675 V368 Z' fill='#eb6834'><title>Regex PostgreSQL — k.ng : 108.3 ms ± 0.6</title></path>
+<line x1='430.7375' x2='430.7375' y1='328.933375' y2='328.520125' stroke='#0b0b0b' stroke-width='1.2'/>
+<line x1='426.7375' x2='434.7375' y1='328.520125' y2='328.520125' stroke='#0b0b0b' stroke-width='1.2'/>
+<text x='430.7375' y='322.520125' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='10.5' fill='#0b0b0b'>108</text>
+<text x='407.25' y='386' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11.5' fill='#0b0b0b'>k.ng</text>
+<path d='M489.775,368 V168.003125 Q489.775,164.003125 493.775,164.003125 H530.75 Q534.75,164.003125 534.75,168.003125 V368 Z' fill='#2a78d6'><title>Automate (Python) — .*land : 562.8 ms ± 74.4</title></path>
+<line x1='512.2624999999999' x2='512.2624999999999' y1='190.96224999999998' y2='137.044' stroke='#0b0b0b' stroke-width='1.2'/>
+<line x1='508.26249999999993' x2='516.2624999999999' y1='137.044' y2='137.044' stroke='#0b0b0b' stroke-width='1.2'/>
+<text x='512.2624999999999' y='131.044' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='10.5' fill='#0b0b0b'>563</text>
+<path d='M536.75,368 V294.30174999999997 Q536.75,290.30174999999997 540.75,290.30174999999997 H577.725 Q581.725,290.30174999999997 581.725,294.30174999999997 V368 Z' fill='#eb6834'><title>Regex PostgreSQL — .*land : 214.3 ms ± 9.4</title></path>
+<line x1='559.2375' x2='559.2375' y1='293.7165' y2='286.887' stroke='#0b0b0b' stroke-width='1.2'/>
+<line x1='555.2375' x2='563.2375' y1='286.887' y2='286.887' stroke='#0b0b0b' stroke-width='1.2'/>
+<text x='559.2375' y='280.887' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='10.5' fill='#0b0b0b'>214</text>
+<text x='535.75' y='386' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11.5' fill='#0b0b0b'>.*land</text>
+<line x1='76' x2='610' y1='368' y2='368' stroke='#52514e' stroke-width='1'/>
+<rect x='634' y='75' width='12' height='12' rx='2' fill='#2a78d6'/>
+<text x='652' y='85' font-family='Helvetica, Arial, sans-serif' font-size='12' fill='#0b0b0b'>Automate (Python)</text>
+<rect x='634' y='97' width='12' height='12' rx='2' fill='#eb6834'/>
+<text x='652' y='107' font-family='Helvetica, Arial, sans-serif' font-size='12' fill='#0b0b0b'>Regex PostgreSQL</text>
+</svg>

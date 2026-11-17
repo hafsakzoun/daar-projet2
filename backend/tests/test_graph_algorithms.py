@@ -62,3 +62,20 @@ class GraphAlgorithmsTests(unittest.TestCase):
         graph = build_jaccard_graph(books, threshold=0.0)
 
         self.assertEqual(graph, {1: {}, 2: {}})
+
+    def test_graphe_garde_les_plus_proches_voisins_sous_le_seuil(self):
+        books = {
+            1: {"a", "b", "c", "d"},
+            2: {"a", "b", "c", "e"},
+            3: {"a", "x", "y", "z"},
+        }
+
+        # Seuil 0.5 seul : le livre 3 serait isole.
+        self.assertEqual(build_jaccard_graph(books, threshold=0.5)[3], {})
+
+        graph = build_jaccard_graph(books, threshold=0.5, min_neighbors=1)
+
+        self.assertEqual(set(graph[3]), {1})
+        self.assertEqual(graph[1][3], graph[3][1])
+        self.assertIn(2, graph[1])
+

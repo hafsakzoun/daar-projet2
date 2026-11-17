@@ -1,0 +1,75 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='760' height='440' viewBox='0 0 760 440'>
+<rect width='100%' height='100%' fill='#ffffff'/>
+<text x='76' y='32' font-family='Helvetica, Arial, sans-serif' font-size='18' font-weight='600' fill='#0b0b0b'>Automate RegEx selon la taille du vocabulaire</text>
+<text x='76' y='54' font-family='Helvetica, Arial, sans-serif' font-size='12.5' fill='#52514e'>Parcours des racines de l'index — moyenne ± écart-type</text>
+<line x1='76' x2='610' y1='368.0' y2='368.0' stroke='#e4e3df' stroke-width='1'/>
+<text x='68' y='372.0' text-anchor='end' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>0</text>
+<line x1='76' x2='610' y1='295.5' y2='295.5' stroke='#e4e3df' stroke-width='1'/>
+<text x='68' y='299.5' text-anchor='end' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>100</text>
+<line x1='76' x2='610' y1='223.0' y2='223.0' stroke='#e4e3df' stroke-width='1'/>
+<text x='68' y='227.0' text-anchor='end' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>200</text>
+<line x1='76' x2='610' y1='150.5' y2='150.5' stroke='#e4e3df' stroke-width='1'/>
+<text x='68' y='154.5' text-anchor='end' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>300</text>
+<line x1='76' x2='610' y1='78.0' y2='78.0' stroke='#e4e3df' stroke-width='1'/>
+<text x='68' y='82.0' text-anchor='end' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>400</text>
+<text transform='translate(18 223.0) rotate(-90)' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11.5' fill='#52514e'>Temps de parcours (ms)</text>
+<text x='117.78982627315433' y='386' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>50</text>
+<text x='143.57965254630867' y='386' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>100</text>
+<text x='220.94913136577165' y='386' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>250</text>
+<text x='349.8982627315433' y='386' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>500</text>
+<text x='594.0' y='386' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>973</text>
+<text x='343.0' y='408' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11.5' fill='#52514e'>Termes parcourus (milliers)</text>
+<line x1='76' x2='610' y1='368' y2='368' stroke='#52514e' stroke-width='1'/>
+<polyline points='117.8,365.1 143.6,362.1 220.9,353.4 349.9,337.7 594.0,309.4' fill='none' stroke='#2a78d6' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'/>
+<line x1='117.78982627315433' x2='117.78982627315433' y1='365.13625' y2='365.03475' stroke='#2a78d6' stroke-width='1.5' opacity='0.55'/>
+<circle cx='117.78982627315433' cy='365.0855' r='4' fill='#2a78d6' stroke='#ffffff' stroke-width='2'><title>alic.* : 4.0 ms ± 0.1</title></circle>
+<line x1='143.57965254630867' x2='143.57965254630867' y1='362.22175' y2='362.07675' stroke='#2a78d6' stroke-width='1.5' opacity='0.55'/>
+<circle cx='143.57965254630867' cy='362.14925' r='4' fill='#2a78d6' stroke='#ffffff' stroke-width='2'><title>alic.* : 8.1 ms ± 0.1</title></circle>
+<line x1='220.94913136577165' x2='220.94913136577165' y1='353.46375' y2='353.31875' stroke='#2a78d6' stroke-width='1.5' opacity='0.55'/>
+<circle cx='220.94913136577165' cy='353.39125' r='4' fill='#2a78d6' stroke='#ffffff' stroke-width='2'><title>alic.* : 20.1 ms ± 0.1</title></circle>
+<line x1='349.8982627315433' x2='349.8982627315433' y1='337.84000000000003' y2='337.55' stroke='#2a78d6' stroke-width='1.5' opacity='0.55'/>
+<circle cx='349.8982627315433' cy='337.695' r='4' fill='#2a78d6' stroke='#ffffff' stroke-width='2'><title>alic.* : 41.8 ms ± 0.2</title></circle>
+<line x1='594.0' x2='594.0' y1='310.783' y2='308.0425' stroke='#2a78d6' stroke-width='1.5' opacity='0.55'/>
+<circle cx='594.0' cy='309.41275' r='4' fill='#2a78d6' stroke='#ffffff' stroke-width='2'><title>alic.* : 80.8 ms ± 1.9</title></circle>
+<polyline points='117.8,364.0 143.6,362.1 220.9,353.2 349.9,338.2 594.0,307.1' fill='none' stroke='#eb6834' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'/>
+<line x1='117.78982627315433' x2='117.78982627315433' y1='365.4335' y2='362.548' stroke='#eb6834' stroke-width='1.5' opacity='0.55'/>
+<circle cx='117.78982627315433' cy='363.99075' r='4' fill='#eb6834' stroke='#ffffff' stroke-width='2'><title>(love|heart) : 5.5 ms ± 2.0</title></circle>
+<line x1='143.57965254630867' x2='143.57965254630867' y1='362.14925' y2='362.01875' stroke='#eb6834' stroke-width='1.5' opacity='0.55'/>
+<circle cx='143.57965254630867' cy='362.084' r='4' fill='#eb6834' stroke='#ffffff' stroke-width='2'><title>(love|heart) : 8.2 ms ± 0.1</title></circle>
+<line x1='220.94913136577165' x2='220.94913136577165' y1='353.33325' y2='353.11575' stroke='#eb6834' stroke-width='1.5' opacity='0.55'/>
+<circle cx='220.94913136577165' cy='353.2245' r='4' fill='#eb6834' stroke='#ffffff' stroke-width='2'><title>(love|heart) : 20.4 ms ± 0.1</title></circle>
+<line x1='349.8982627315433' x2='349.8982627315433' y1='338.45625' y2='337.91975' stroke='#eb6834' stroke-width='1.5' opacity='0.55'/>
+<circle cx='349.8982627315433' cy='338.188' r='4' fill='#eb6834' stroke='#ffffff' stroke-width='2'><title>(love|heart) : 41.1 ms ± 0.4</title></circle>
+<line x1='594.0' x2='594.0' y1='311.2615' y2='302.982' stroke='#eb6834' stroke-width='1.5' opacity='0.55'/>
+<circle cx='594.0' cy='307.12175' r='4' fill='#eb6834' stroke='#ffffff' stroke-width='2'><title>(love|heart) : 84.0 ms ± 5.7</title></circle>
+<polyline points='117.8,365.1 143.6,362.4 220.9,353.8 349.9,338.8 594.0,310.7' fill='none' stroke='#1baf7a' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'/>
+<line x1='117.78982627315433' x2='117.78982627315433' y1='365.1725' y2='365.013' stroke='#1baf7a' stroke-width='1.5' opacity='0.55'/>
+<circle cx='117.78982627315433' cy='365.09275' r='4' fill='#1baf7a' stroke='#ffffff' stroke-width='2'><title>k.ng : 4.0 ms ± 0.1</title></circle>
+<line x1='143.57965254630867' x2='143.57965254630867' y1='362.42475' y2='362.33775' stroke='#1baf7a' stroke-width='1.5' opacity='0.55'/>
+<circle cx='143.57965254630867' cy='362.38125' r='4' fill='#1baf7a' stroke='#ffffff' stroke-width='2'><title>k.ng : 7.8 ms ± 0.1</title></circle>
+<line x1='220.94913136577165' x2='220.94913136577165' y1='353.9205' y2='353.761' stroke='#1baf7a' stroke-width='1.5' opacity='0.55'/>
+<circle cx='220.94913136577165' cy='353.84075' r='4' fill='#1baf7a' stroke='#ffffff' stroke-width='2'><title>k.ng : 19.5 ms ± 0.1</title></circle>
+<line x1='349.8982627315433' x2='349.8982627315433' y1='339.35525' y2='338.20975' stroke='#1baf7a' stroke-width='1.5' opacity='0.55'/>
+<circle cx='349.8982627315433' cy='338.7825' r='4' fill='#1baf7a' stroke='#ffffff' stroke-width='2'><title>k.ng : 40.3 ms ± 0.8</title></circle>
+<line x1='594.0' x2='594.0' y1='311.015' y2='310.4785' stroke='#1baf7a' stroke-width='1.5' opacity='0.55'/>
+<circle cx='594.0' cy='310.74675' r='4' fill='#1baf7a' stroke='#ffffff' stroke-width='2'><title>k.ng : 79.0 ms ± 0.4</title></circle>
+<polyline points='117.8,357.8 143.6,347.0 220.9,309.3 349.9,259.0 594.0,144.9' fill='none' stroke='#eda100' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'/>
+<line x1='117.78982627315433' x2='117.78982627315433' y1='357.90075' y2='357.68325' stroke='#eda100' stroke-width='1.5' opacity='0.55'/>
+<circle cx='117.78982627315433' cy='357.792' r='4' fill='#eda100' stroke='#ffffff' stroke-width='2'><title>.*land : 14.1 ms ± 0.1</title></circle>
+<line x1='143.57965254630867' x2='143.57965254630867' y1='347.062' y2='346.859' stroke='#eda100' stroke-width='1.5' opacity='0.55'/>
+<circle cx='143.57965254630867' cy='346.9605' r='4' fill='#eda100' stroke='#ffffff' stroke-width='2'><title>.*land : 29.0 ms ± 0.1</title></circle>
+<line x1='220.94913136577165' x2='220.94913136577165' y1='317.11225' y2='301.58275' stroke='#eda100' stroke-width='1.5' opacity='0.55'/>
+<circle cx='220.94913136577165' cy='309.34749999999997' r='4' fill='#eda100' stroke='#ffffff' stroke-width='2'><title>.*land : 80.9 ms ± 10.7</title></circle>
+<line x1='349.8982627315433' x2='349.8982627315433' y1='259.6705' y2='258.264' stroke='#eda100' stroke-width='1.5' opacity='0.55'/>
+<circle cx='349.8982627315433' cy='258.96725000000004' r='4' fill='#eda100' stroke='#ffffff' stroke-width='2'><title>.*land : 150.4 ms ± 1.0</title></circle>
+<line x1='594.0' x2='594.0' y1='151.29025000000001' y2='138.42875' stroke='#eda100' stroke-width='1.5' opacity='0.55'/>
+<circle cx='594.0' cy='144.8595' r='4' fill='#eda100' stroke='#ffffff' stroke-width='2'><title>.*land : 307.8 ms ± 8.9</title></circle>
+<rect x='634' y='75' width='12' height='12' rx='2' fill='#2a78d6'/>
+<text x='652' y='85' font-family='Helvetica, Arial, sans-serif' font-size='12' fill='#0b0b0b'>alic.*</text>
+<rect x='634' y='97' width='12' height='12' rx='2' fill='#eb6834'/>
+<text x='652' y='107' font-family='Helvetica, Arial, sans-serif' font-size='12' fill='#0b0b0b'>(love|heart)</text>
+<rect x='634' y='119' width='12' height='12' rx='2' fill='#1baf7a'/>
+<text x='652' y='129' font-family='Helvetica, Arial, sans-serif' font-size='12' fill='#0b0b0b'>k.ng</text>
+<rect x='634' y='141' width='12' height='12' rx='2' fill='#eda100'/>
+<text x='652' y='151' font-family='Helvetica, Arial, sans-serif' font-size='12' fill='#0b0b0b'>.*land</text>
+</svg>

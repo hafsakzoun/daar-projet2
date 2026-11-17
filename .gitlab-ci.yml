@@ -24,7 +24,7 @@ backend_tests:
 
   script:
     - cd backend
-    - python -m pip install --no-cache-dir -r requirements-test.txt
+    - python -m pip install --no-cache-dir -r requirements-dev.txt
     - python -m pytest tests/ -q
 
 frontend_build:

@@ -1,2 +1,4 @@
+# Dependances de test (CI GitLab + image Docker locale).
 -r requirements.txt
 pytest>=8,<10
+httpx2==2.16.0

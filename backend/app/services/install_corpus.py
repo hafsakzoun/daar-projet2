@@ -26,6 +26,48 @@ def file_sha256(path):
     return sha.hexdigest()
 
 
+def clean_title(title: str) -> str:
+    """Retire les codes de catalogue MARC laisses dans les titres Gutenberg.
+
+    « Peter Pan : $b [Peter and Wendy] » -> « Peter Pan : [Peter and Wendy] ».
+    Les espaces multiples sont aussi reduits.
+    """
+    title = re.sub(r"\s*\$[a-z]\s*", " ", title)
+    return re.sub(r"\s+", " ", title).strip()
+
+
+def apply_metadata(book, row):
+    """Copie les metadonnees du manifeste dans la ligne `books`."""
+    book.title = clean_title(row["title"])
+    book.author = row["author"] or "Auteur inconnu"
+    book.language = row["language"]
+    book.word_count = int(row["word_count"])
+    book.source_url = row["source_url"]
+
+
+def sync_metadata():
+    """Met a jour titres et auteurs des livres deja installes.
+
+    Rapide (1 700 lignes) : permet de corriger les metadonnees sans
+    retelecharger le corpus. Renvoie le nombre de livres modifies.
+    """
+    books, _ = load_manifest()
+    changed = 0
+
+    with SessionLocal() as session:
+        for row in books:
+            book = session.get(Book, int(row["gutenberg_id"]))
+            if book is None:
+                continue
+            before = (book.title, book.author)
+            apply_metadata(book, row)
+            if (book.title, book.author) != before:
+                changed += 1
+        session.commit()
+
+    return changed
+
+
 def load_manifest():
     # Charger les livres attendus depuis le CSV
     with CSV_PATH.open(encoding="utf-8", newline="") as file:
@@ -196,11 +238,7 @@ def install_corpus(archive_stream=None):
             else:
                 updated += 1
 
-            book.title = row["title"]
-            book.author = row["author"] or "Auteur inconnu"
-            book.language = row["language"]
-            book.word_count = int(row["word_count"])
-            book.source_url = row["source_url"]
+            apply_metadata(book, row)
             book.text_path = str(path)
 
         session.commit()

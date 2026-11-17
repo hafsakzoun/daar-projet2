@@ -92,16 +92,85 @@ def test_v2_regex_on_stems(indexed_v2):
     assert original["total"] == 0
 
 
-def test_v2_ready_and_fallback(indexed_v2, monkeypatch):
-    with SessionLocal() as db:
-        # Les tests utilisent V1 par defaut.
-        assert not v2_ready(db)
+def test_v2_ready_detects_complete_index(indexed_v2, monkeypatch):
+    from app.services import index_version
 
-        # On verifie la detection V2 sans changer de base.
-        monkeypatch.delenv("DAAR_TEST_DB", raising=False)
-        monkeypatch.delenv("DAAR_SEARCH_INDEX", raising=False)
+    monkeypatch.setattr(index_version, "_ready", False)
+    with SessionLocal() as db:
         assert v2_ready(db)
 
-        # Repli explicite sur V1.
-        monkeypatch.setenv("DAAR_SEARCH_INDEX", "v1")
-        assert not v2_ready(db)
+
+# ───────── Tri PageRank en SQL ─────────
+
+def test_pagerank_unavailable_without_scores(indexed_v2):
+    from app.services.search_optimized import PageRankUnavailable
+
+    with SessionLocal() as db, pytest.raises(PageRankUnavailable):
+        search_books_v2(db, "alice", sort="pagerank")
+
+
+def test_pagerank_sort_and_pagination(indexed_v2):
+    from app.db.models import BookScore
+
+    with SessionLocal.begin() as db:
+        db.add_all([
+            BookScore(book_id=11, pagerank=0.1),
+            BookScore(book_id=12, pagerank=0.5),
+            BookScore(book_id=13, pagerank=0.3),
+        ])
+
+    with SessionLocal() as db:
+        first = search_books_v2(db, "alice", limit=2, sort="pagerank")
+        second = search_books_v2(db, "alice", limit=2, offset=2, sort="pagerank")
+
+    assert first["total"] == 3
+    # Tri par centralite decroissante, pagine par PostgreSQL.
+    assert [b["id"] for b in first["results"]] == [12, 13]
+    assert first["results"][0]["pagerank"] == 0.5
+    assert [b["id"] for b in second["results"]] == [11]
+
+
+# ───────── RegEx par automate (vocabulaire en memoire) ─────────
+
+def test_regex_automate_uses_prefix_and_vocabulary(indexed_v2):
+    from app.services import regex_automate_search_v2 as regex
+
+    regex.reset_vocabulary()
+    try:
+        with SessionLocal() as db:
+            prefixed = regex.search_regex_automate_v2(db, "ali.*")
+            alternative = regex.search_regex_automate_v2(db, "(alic|rabbit)")
+            unconstrained = regex.search_regex_automate_v2(db, ".*son")
+            nothing = regex.search_regex_automate_v2(db, "zzz+")
+    finally:
+        regex.reset_vocabulary()
+
+    assert [b["id"] for b in prefixed["results"]] == [11, 12, 13]
+    assert alternative["total"] == 3
+    assert [b["id"] for b in unconstrained["results"]] == [14]
+    assert nothing["total"] == 0
+
+
+# ───────── Suggestions : voisins dans le graphe de Jaccard ─────────
+
+def test_recommendations_come_from_graph_table(indexed_v2):
+    from fastapi.testclient import TestClient
+
+    from app.db.models import BookSimilarity
+    from app.main import app
+
+    with SessionLocal.begin() as db:
+        db.add_all([
+            BookSimilarity(book_id=11, neighbor_id=12, similarity=0.4),
+            BookSimilarity(book_id=11, neighbor_id=13, similarity=0.7),
+            BookSimilarity(book_id=11, neighbor_id=14, similarity=0.2),
+        ])
+
+    with TestClient(app) as http:
+        body = http.get("/api/v1/books/11/recommendations?limit=2").json()
+        empty = http.get("/api/v1/books/12/recommendations").json()
+        missing = http.get("/api/v1/books/999/recommendations")
+
+    assert [(b["id"], b["similarity"]) for b in body["results"]] == [(13, 0.7), (12, 0.4)]
+    assert empty["results"] == []
+    assert missing.status_code == 404

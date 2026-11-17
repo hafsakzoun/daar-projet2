@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.db.session import get_db
 from app.api.v1.endpoints import search as search_api
-from app.services.pagerank_scores import PageRankUnavailable
+from app.services.search_optimized import PageRankUnavailable
 from app.services.regex_automate_search_v2 import TooManyRegexMatches
 
 

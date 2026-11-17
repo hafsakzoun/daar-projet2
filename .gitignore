@@ -22,3 +22,6 @@ data/generated/
 .DS_Store
 # Archives du corpus (partagees via Release)
 /corpus-*.tar.gz
+
+# Archive de rendu
+/daar-projet2-*.zip

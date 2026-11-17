@@ -1,6 +1,6 @@
 import pytest
 
-from app.services.regex_search import validate_regex
+from app.services.search_optimized import validate_regex
 
 
 def test_simple_regex():

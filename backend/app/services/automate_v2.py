@@ -1,4 +1,6 @@
-"""Port du Parser, NFA et DFA du projet DAAR 1 pour la V2."""
+"""Moteur RegEx du projet DAAR 1 : analyse syntaxique, automate de
+Thompson (NFA avec ε-transitions) et determinisation a la volee
+(construction des sous-ensembles memorisee transition par transition)."""
 
 class RegexError(ValueError):
     pass
@@ -87,10 +89,18 @@ class Parser:
 class AutomateV2:
     def __init__(self, pattern):
         tree = Parser(pattern.casefold()).parse()
+        self.tree = tree
         self.edges = []
         self.start, self.accept = self.build(tree)
         self.initial = self.closure({self.start})
         self.transitions = {}
+
+        # DFA construit a la volee : chaque ensemble d'etats du NFA recoit
+        # un numero ; dfa[numero] = {caractere: numero suivant, -1 = puits}.
+        self._numbers = {self.initial: 0}
+        self._sets = [self.initial]
+        self.dfa = [{}]
+        self.accepting = [self.accept in self.initial]
 
     def state(self):
         if len(self.edges) >= 512:
@@ -172,12 +182,78 @@ class AutomateV2:
         return self.transitions[key]
 
     def fullmatch(self, word):
-        states = self.initial
+        return self.fullmatch_normalized(word.casefold())
 
-        for char in word.casefold():
-            states = self.step(states, char)
+    def _expand(self, number, char):
+        """Calcule (une seule fois) la transition DFA manquante."""
+        target = self.step(self._sets[number], char)
 
-            if not states:
+        if not target:
+            result = -1
+        else:
+            result = self._numbers.get(target)
+            if result is None:
+                result = len(self._sets)
+                self._numbers[target] = result
+                self._sets.append(target)
+                self.dfa.append({})
+                self.accepting.append(self.accept in target)
+
+        self.dfa[number][char] = result
+        return result
+
+    def fullmatch_normalized(self, word):
+        """Comme fullmatch, pour un mot deja en minuscules (termes de l'index).
+
+        Cout : une lecture de dictionnaire par caractere une fois les
+        transitions connues, soit O(|mot|).
+        """
+        dfa = self.dfa
+        state = 0
+
+        for char in word:
+            following = dfa[state].get(char)
+            if following is None:
+                following = self._expand(state, char)
+            if following < 0:
                 return False
+            state = following
 
-        return self.accept in states
+        return self.accepting[state]
+
+MAX_PREFIXES = 16
+
+
+def literal_prefixes(tree):
+    """Prefixes litteraux possibles des mots reconnus par l'expression.
+
+    Renvoie (prefixes, exact) : tout mot reconnu commence par l'un des
+    `prefixes` ; `exact` vaut True si l'expression ne reconnait que ces
+    chaines. Un prefixe vide signifie « aucune contrainte ».
+
+    Exemples : alic.* -> ["alic"] ; (love|heart) -> ["love", "heart"] ;
+    k.ng -> ["k"] ; .*ing -> [""].
+    """
+    kind = tree[0]
+
+    if kind == "char":
+        return [tree[1]], True
+    if kind == "eps":
+        return [""], True
+    if kind == "plus":
+        return literal_prefixes(tree[1])[0], False
+    if kind == "alt":
+        left, left_exact = literal_prefixes(tree[1])
+        right, right_exact = literal_prefixes(tree[2])
+        return left + right, left_exact and right_exact
+    if kind == "concat":
+        left, left_exact = literal_prefixes(tree[1])
+        if not left_exact:
+            return left, False
+        right, right_exact = literal_prefixes(tree[2])
+        if len(left) * len(right) > MAX_PREFIXES:
+            return left, False
+        return [a + b for a in left for b in right], right_exact
+
+    # dot, star, opt : le mot peut commencer par n'importe quoi.
+    return [""], False

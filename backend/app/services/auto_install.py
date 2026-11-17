@@ -16,6 +16,7 @@ from app.services.install_corpus import (
     CORPUS_DIR,
     file_sha256,
     load_manifest,
+    sync_metadata,
 )
 
 ARCHIVE_SHA256 = (
@@ -26,13 +27,7 @@ CHUNK_SIZE = 1024 * 1024
 
 
 def corpus_ready():
-    Base.metadata.create_all(
-        bind=engine,
-        tables=[
-            table for table in Base.metadata.sorted_tables
-            if table.name not in {"terms", "postings"}
-        ],
-    )
+    Base.metadata.create_all(bind=engine)
     books, expected = load_manifest()
 
     with SessionLocal() as session:
@@ -151,7 +146,11 @@ def download_archive(url, destination=ARCHIVE_PATH):
 
 def main():
     if corpus_ready():
-        print("Corpus déjà installé et vérifié.", flush=True)
+        changed = sync_metadata()
+        print(
+            f"Corpus déjà installé et vérifié ({changed} titres mis à jour).",
+            flush=True,
+        )
         return
 
     url = os.environ.get("CORPUS_URL", "").strip()
