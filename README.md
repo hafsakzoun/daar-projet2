@@ -9,7 +9,7 @@ similaires à partir d'un graphe de Jaccard.
 **Démonstration AWS : [https://13.61.8.67/](https://13.61.8.67/).**
 Le déploiement utilise un certificat gratuit Let's Encrypt pour cette adresse IP,
 avec redirection HTTP vers HTTPS et renouvellement automatique. L'adresse
-publique peut changer après un arrêt et un redémarrage de l'instance EC2 ;
+publique peut changer après un arrêt et un redémarrage de l'instance EC2 
 il faut alors réémettre le certificat pour la nouvelle adresse.
 
 ## Fonctionnalités
@@ -21,7 +21,7 @@ il faut alors réémettre le certificat pour la nouvelle adresse.
 - Recommandations issues du graphe de similarité de Jaccard.
 - Lecture du texte intégral : couvertures cliquables, paragraphes fluides, taille
   réglable, ambiances papier/crème/nuit et accès direct à une partie de lecture.
-- Graphe interactif des voisins de Jaccard, ouvert par défaut dans la liseuse ;
+- Graphe interactif des voisins de Jaccard, ouvert par défaut dans la liseuse 
   chaque nœud ouvre le livre correspondant.
 - Comptes utilisateurs, favoris et historique conservés dans PostgreSQL.
 
@@ -29,7 +29,7 @@ il faut alors réémettre le certificat pour la nouvelle adresse.
 
 - Python 3.12, FastAPI, SQLAlchemy et pytest.
 - PostgreSQL 16.
-- React et Vite ; nginx sert le frontend compilé et relaie les appels à l'API.
+- React et Vite  nginx sert le frontend compilé et relaie les appels à l'API.
 - Docker Compose pour l'installation et l'exécution.
 
 ## Démarrage local
@@ -63,7 +63,7 @@ Au premier lancement, les étapes sont exécutées dans cet ordre :
 5. Le backend démarre, puis le frontend.
 
 Le premier lancement peut prendre plusieurs dizaines de minutes. Le corpus
-occupe environ 1,4 Go et la base validée environ 990 Mo ; prévoir également
+occupe environ 1,4 Go et la base validée environ 990 Mo  prévoir également
 l'espace nécessaire aux images Docker, aux caches et aux fichiers temporaires.
 
 Suivre l'installation :
@@ -113,7 +113,7 @@ peut être repris par HTTP Range si le serveur le permet. Une installation
 interrompue peut être relancée avec la même commande Docker.
 
 Chaque livre indexé et ses associations livre-terme sont validés dans une même
-transaction ; les livres déjà terminés sont conservés lors d'une reprise.
+transaction  les livres déjà terminés sont conservés lors d'une reprise.
 
 | Indicateur | Index V2 validé |
 |---|---:|
@@ -132,7 +132,7 @@ de `corpus-init`, même lorsque le corpus est déjà présent. Les codes de
 catalogue MARC sont retirés, par exemple
 `Peter Pan : $b [Peter and Wendy]` devient `Peter Pan : [Peter and Wendy]`.
 
-L'ancien index V1 a été retiré ; ses mesures restent dans les documents de
+L'ancien index V1 a été retiré  ses mesures restent dans les documents de
 comparaison : 1 000 281 termes et 15 546 923 associations livre-terme.
 
 ## API de recherche et de lecture
@@ -155,13 +155,13 @@ Le tri et la pagination sont réalisés dans PostgreSQL.
 
 Les RegEx s'appliquent à chaque **racine entière de l'index**, et non aux
 phrases du texte original. Ainsi, `alice` est normalisé en `alic` en recherche
-par mots-clés ; en mode RegEx, utiliser `alic` ou `alic.*`.
+par mots-clés  en mode RegEx, utiliser `alic` ou `alic.*`.
 
 La syntaxe de l'automate comprend les caractères littéraux, `.`, `|`, les
 groupes `(...)`, les répétitions `*`, `+`, `?` et l'échappement par antislash.
 Les classes `[a-z]`, les ancres `^` et `$` et les raccourcis comme `\d` ne sont
 pas implémentés comme dans les moteurs RegEx généralistes. Un motif est limité
-à 100 caractères ; une expression reconnaissant plus de 20 000 termes est
+à 100 caractères  une expression reconnaissant plus de 20 000 termes est
 refusée avec HTTP 422.
 
 Le frontend utilise `/api/v1` sur la même origine. Avec Compose, nginx relaie
@@ -202,7 +202,7 @@ Validation du **17 novembre 2026**, sur le code du commit `3ae4534` :
 - Installation complète depuis une copie du code commité, sans `.env`, dans
   le projet Docker séparé `daar-fresh-verif`, avec des volumes neufs.
 - Les 110 fichiers suivis par Git de cette copie ont été comparés au commit.
-- Corpus téléchargé et vérifié, index et graphe reconstruits ; les trois
+- Corpus téléchargé et vérifié, index et graphe reconstruits  les trois
   tâches d'initialisation ont terminé avec le code 0.
 - PostgreSQL, backend et frontend : `healthy`.
 - **13 contrôles fonctionnels réussis** sur l'installation neuve, puis sur AWS :
@@ -237,7 +237,7 @@ docker compose run --rm -T --no-deps \
 
 Ne pas exécuter cette suite sur la base principale `daar`. Les dépendances de
 test sont déclarées dans `backend/requirements-dev.txt`. La CI GitLab contient
-les jobs `backend_tests` et `frontend_build` ; les validations ci-dessus ne
+les jobs `backend_tests` et `frontend_build`  les validations ci-dessus ne
 constituent pas une confirmation d'un nouveau pipeline distant.
 
 ## Performances
@@ -248,7 +248,7 @@ mesures de charge de l'instance AWS.
 
 - Recherche par mot-clé sur le corpus complet, sans filtre artificiel
   d'échantillonnage : environ 2 à 7 ms selon le mot.
-- RegEx avec préfixe littéral : environ 25 à 32 ms ; sans préfixe, environ
+- RegEx avec préfixe littéral : environ 25 à 32 ms  sans préfixe, environ
   560 ms pour le motif mesuré.
 - Recommandations : environ 10 ms.
 - Charge locale : environ 270 requêtes/s, aucune erreur jusqu'à 16 clients
@@ -279,15 +279,15 @@ docker compose -f compose.yaml -f compose.aws.yaml up -d --build
 
 La surcharge AWS publie le frontend sur le port 80, retire l'exposition directe
 du backend et exige `POSTGRES_PASSWORD`. Le groupe de sécurité EC2 doit
-autoriser HTTP TCP 80 pour l'accès public ; PostgreSQL et le port 8000 du
+autoriser HTTP TCP 80 pour l'accès public  PostgreSQL et le port 8000 du
 backend n'ont pas besoin d'être ouverts sur Internet.
 
 ### Instance de démonstration validée
 
-- Région : `eu-north-1` ; Debian 13, architecture x86-64.
+- Région : `eu-north-1`  Debian 13, architecture x86-64.
 - Instance `t3.micro`, environ 1 Go de RAM, disque de 8 Go et 1 Go de swap.
 - Application : [https://13.61.8.67/](https://13.61.8.67/).
-- Backend et données validés : `3ae4534` ; favicon Lisière : `d466011`.
+- Backend et données validés : `3ae4534`  favicon Lisière : `d466011`.
 
 Sur cette petite instance, les images ont été construites sur le serveur,
 puis le corpus et la base issus de l'installation neuve validée ont été
@@ -299,7 +299,7 @@ Le dossier du déploiement est `/home/admin/daar-release-3ae4534`, avec le proje
 Compose `daar`. Un fichier propre au serveur, `compose.ec2.yaml`, limite les
 journaux et ajuste PostgreSQL : `shared_buffers=64MB`, `max_connections=40`,
 `max_wal_size=256MB` et `min_wal_size=80MB`. Ce fichier n'est pas livré dans le
-dépôt ; il s'ajoute aux deux fichiers Compose du projet.
+dépôt  il s'ajoute aux deux fichiers Compose du projet.
 
 Pour consulter les services du déploiement existant, depuis une session SSH :
 
@@ -311,7 +311,7 @@ sudo docker compose -p daar \
 
 La surcharge `compose.https.yaml` active HTTPS sur le déploiement existant,
 en complément des fichiers de base, AWS et EC2. Le port
-443 doit être autorisé dans le groupe de sécurité EC2 ; le port 80 reste ouvert
+443 doit être autorisé dans le groupe de sécurité EC2  le port 80 reste ouvert
 pour la validation du certificat et redirige vers HTTPS. Les cookies de session
 sont marqués `Secure`. Voir [HTTPS.md](docs/HTTPS.md) pour la configuration, le
 renouvellement automatique et les commandes de maintenance.
