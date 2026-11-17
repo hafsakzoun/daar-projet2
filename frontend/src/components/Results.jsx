@@ -125,14 +125,15 @@ export default function Results({
 
                 return (
                   <li key={book.id} className="book-card">
-                    <div
+                    <a
                       className={`book-cover book-cover--${book.id % 5}`}
-                      aria-hidden="true"
+                      href={`#/livre/${book.id}`}
+                      aria-label={`Lire ${book.title}`}
                     >
                       <span>{book.author}</span>
                       <strong>{book.title}</strong>
                       <em>N° {book.id}</em>
-                    </div>
+                    </a>
 
                     <div className="book-info">
                       <h3>{book.title}</h3>

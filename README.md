@@ -19,7 +19,10 @@ il faut alors réémettre le certificat pour la nouvelle adresse.
 - Classement par fréquence normalisée ou par centralité PageRank.
 - Pagination du catalogue et des résultats.
 - Recommandations issues du graphe de similarité de Jaccard.
-- Lecture du texte intégral, paginé en caractères.
+- Lecture du texte intégral : couvertures cliquables, paragraphes fluides, taille
+  réglable, ambiances papier/crème/nuit et accès direct à une partie de lecture.
+- Graphe interactif des voisins de Jaccard, ouvert par défaut dans la liseuse ;
+  chaque nœud ouvre le livre correspondant.
 - Comptes utilisateurs, favoris et historique conservés dans PostgreSQL.
 
 ## Technologies
