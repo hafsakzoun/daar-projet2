@@ -1,112 +1,94 @@
-# DAAR — Projet 2 : moteur de recherche de livres
+# DAAR — Projet 2 : Lisière, moteur de recherche de livres
 
 Projet de l'UE DAAR du Master Informatique de Sorbonne Université.
 
-Objectif : développer un moteur de recherche de livres avec
-index inversé, recherche par mots-clés, expressions régulières,
-classement et recommandations.
+Lisière permet de rechercher dans un corpus de livres par mots-clés ou par
+expressions régulières, de classer les résultats et de découvrir des livres
+similaires à partir d'un graphe de Jaccard.
+
+**Démonstration AWS : [http://13.61.8.67/](http://13.61.8.67/).**
+Le déploiement actuel utilise HTTP ; HTTPS n'est pas configuré. Pour les essais
+des comptes, utiliser des identifiants fictifs et un mot de passe réservé à la
+démonstration : HTTP ne chiffre pas les échanges. L'adresse publique peut
+changer après un arrêt et un redémarrage de l'instance EC2.
+
+## Fonctionnalités
+
+- Recherche par mots-clés avec normalisation linguistique et racinisation.
+- Recherche par RegEx avec un automate de Thompson, déterminisé à la volée.
+- Classement par fréquence normalisée ou par centralité PageRank.
+- Pagination du catalogue et des résultats.
+- Recommandations issues du graphe de similarité de Jaccard.
+- Lecture du texte intégral, paginé en caractères.
+- Comptes utilisateurs, favoris et historique conservés dans PostgreSQL.
 
 ## Technologies
 
-- Python 3.12, FastAPI, SQLAlchemy
-- PostgreSQL 16
-- React et Vite
-- Docker Compose
-- pytest
+- Python 3.12, FastAPI, SQLAlchemy et pytest.
+- PostgreSQL 16.
+- React et Vite ; nginx sert le frontend compilé et relaie les appels à l'API.
+- Docker Compose pour l'installation et l'exécution.
 
-## Corpus Gutenberg
+## Démarrage local
 
-Le corpus contient 1 700 livres de Project Gutenberg.
-Chaque livre contient au moins 10 000 mots.
+Prérequis : Docker Desktop ou Docker Engine avec une version récente de Docker
+Compose. Une connexion Internet est nécessaire pour télécharger les images,
+les dépendances et le corpus lors de la première installation.
 
-Validation réalisée :
-- 1 700 fichiers présents ;
-- 1 700 empreintes SHA-256 conformes ;
-- 1 700 livres au-dessus de 10 000 mots ;
-- 1 700 livres indexés.
-
-Ancien index V1 (retiré du code, chiffres gardés pour comparaison) :
-- 1 000 281 termes distincts ;
-- 15 546 923 associations livre-terme.
-
-Index V2 optimise :
-- 973 252 termes distincts ;
-- 10 753 306 associations livre-terme ;
-- recherche avec normalisation linguistique et stemming.
-
-## Démarrage avec Docker
-
-Depuis la racine du dépôt, avec Docker Compose installé :
+Depuis la racine du dépôt :
 
 ```bash
-docker compose up --build
+docker compose up -d --build
 ```
 
-Ouvrir l’interface sur <http://localhost:5173>. La documentation FastAPI est disponible sur <http://127.0.0.1:8000/docs>. Le démarrage utilise des valeurs par défaut et fonctionne sans fichier `.env`. Pour personnaliser les origines CORS des appels directs à FastAPI, utiliser `.env.example` comme modèle.
+Cette commande fonctionne sans fichier `.env`, avec les valeurs locales par
+défaut. Pour personnaliser les ports ou les paramètres du graphe :
 
-## Prérequis pour le lancement sans Docker
+```bash
+cp .env.example .env
+```
 
-L'archive externe du corpus est disponible à l'adresse :
+Ne pas publier le fichier `.env`. Pour un déploiement public, définir un mot de
+passe PostgreSQL propre au serveur.
 
-https://github.com/ouumm/daar-corpus-public/releases/download/corpus-v1/corpus-1700.tar.gz
+Au premier lancement, les étapes sont exécutées dans cet ordre :
 
-Le téléchargement est reprenable par requêtes HTTP Range lorsque
-le serveur le permet. L'archive est contrôlée par SHA-256.
+1. PostgreSQL démarre et devient disponible.
+2. `corpus-init` télécharge, vérifie et installe les livres.
+3. `index-init` construit l'index inversé V2.
+4. `graph-init` construit le graphe de Jaccard et calcule PageRank.
+5. Le backend démarre, puis le frontend.
 
-## Installation Docker
+Le premier lancement peut prendre plusieurs dizaines de minutes. Le corpus
+occupe environ 1,4 Go et la base validée environ 990 Mo ; prévoir également
+l'espace nécessaire aux images Docker, aux caches et aux fichiers temporaires.
 
-Prérequis : Docker Desktop ou Docker Engine avec Docker Compose.
+Suivre l'installation :
 
-Cloner le dépôt et se placer à sa racine.
+```bash
+docker compose ps -a
+docker compose logs -f corpus-init index-init graph-init
+```
 
-Pour une nouvelle installation, préparer les variables
-d'environnement :
+Les services `corpus-init`, `index-init` et `graph-init` doivent terminer avec
+le code **0**. Les services `db`, `backend` et `frontend` doivent devenir
+**healthy**.
 
-    cp .env.example .env
+| Accès local | Adresse |
+|---|---|
+| Interface | [http://localhost:5173](http://localhost:5173) |
+| Préfixe API | `/api/v1` sur le port 8000 |
+| Documentation FastAPI | [http://localhost:8000/docs](http://localhost:8000/docs) |
+| Santé de l'API | [http://localhost:8000/api/v1/health](http://localhost:8000/api/v1/health) |
 
-Modifier POSTGRES_PASSWORD dans le fichier .env avant de lancer
-PostgreSQL. Ne pas publier ce fichier dans Git.
-
-Démarrer les services :
-
-    docker compose up -d --build
-
-Vérifier leur état :
-
-    docker compose ps -a
-
-Les services db, backend et frontend disposent de healthchecks.
-Les services corpus-init et index-init sont des tâches
-d'initialisation : leur état normal après succès est Exited (0).
-
-Au premier lancement :
-1. PostgreSQL démarre.
-2. Le corpus est téléchargé et vérifié.
-3. L'index inversé est construit.
-4. Le backend démarre.
-5. Le frontend démarre.
-
-Le premier téléchargement et la première indexation peuvent être
-longs et nécessitent suffisamment d'espace disque.
-
-## Accès local
-
-- Frontend : http://localhost:5173
-- API : http://localhost:8000
-- Documentation API : http://localhost:8000/docs
-- Santé API : http://localhost:8000/api/v1/health
-
-Le frontend est compilé par Vite puis servi par nginx, qui relaie
-`/api` vers FastAPI sur le réseau Docker `app_net`.
-
-Par défaut, l'application n'écoute que sur 127.0.0.1. Pour la
-démonstration sur plusieurs appareils (même Wi-Fi), l'ouvrir au réseau :
+Par défaut, les ports ne sont accessibles que depuis la machine hôte. Pour
+une démonstration sur plusieurs appareils du même réseau :
 
 ```bash
 FRONTEND_BIND=0.0.0.0 docker compose up -d
 ```
 
-puis ouvrir `http://<IP-du-serveur>:5173` sur les autres machines.
+Ouvrir ensuite `http://<IP-du-serveur>:5173` depuis les autres appareils.
 
 Après une modification du code :
 
@@ -114,85 +96,160 @@ Après une modification du code :
 docker compose up -d --build backend frontend
 ```
 
-## Arrêt et conservation des données
+## Corpus et index
 
-Arrêter les conteneurs sans supprimer les volumes :
+Le corpus contient **1 700 livres de Project Gutenberg**, chacun avec au moins
+10 000 mots. Le minimum vérifié est de **10 183 mots**.
 
-    docker compose down
+L'archive externe est publiée ici :
+[corpus-1700.tar.gz](https://github.com/ouumm/daar-corpus-public/releases/download/corpus-v1/corpus-1700.tar.gz).
 
-Redémarrer les services :
+L'installateur vérifie le SHA-256 de l'archive, puis les empreintes des fichiers
+par rapport au manifeste `backend/data/books.csv`. Un téléchargement partiel
+peut être repris par HTTP Range si le serveur le permet. Une installation
+interrompue peut être relancée avec la même commande Docker.
 
-    docker compose up -d
+Chaque livre indexé et ses associations livre-terme sont validés dans une même
+transaction ; les livres déjà terminés sont conservés lors d'une reprise.
 
-Deux volumes principaux conservent les données :
-- pgdata : PostgreSQL et index inversé ;
-- corpus : fichiers texte Gutenberg.
+| Indicateur | Index V2 validé |
+|---|---:|
+| Livres indexés | 1 700 |
+| Termes distincts | 973 252 |
+| Associations livre-terme | 10 753 306 |
+| Arêtes non orientées du graphe | 36 506 |
+| Scores PageRank | 1 700 |
 
-ATTENTION : ne pas utiliser docker compose down -v si les données
-doivent être conservées.
+La V2 découpe les mots Unicode, les passe en minuscules, retire des mots vides
+et applique la racinisation Snowball pour l'anglais, le français et l'allemand.
+Par exemple, `whales` et `whale` partagent une racine.
 
-## Recherche explicite
+Les titres sont nettoyés lors de l'installation et à chaque nouvelle exécution
+de `corpus-init`, même lorsque le corpus est déjà présent. Les codes de
+catalogue MARC sont retirés, par exemple
+`Peter Pan : $b [Peter and Wendy]` devient `Peter Pan : [Peter and Wendy]`.
 
-Recherche par mots-clés :
+L'ancien index V1 a été retiré ; ses mesures restent dans les documents de
+comparaison : 1 000 281 termes et 15 546 923 associations livre-terme.
 
-    GET /api/v1/search?q=alice
+## API de recherche et de lecture
 
-Le classement repose sur les fréquences cumulées des termes.
-Les requêtes comportant plusieurs mots utilisent une logique OU.
+```text
+GET /api/v1/search?q=alice&sort=occurrences&limit=20&offset=0
+GET /api/v1/search?q=alice&sort=pagerank&limit=20&offset=0
+GET /api/v1/search/regex?q=alic%7Crabbit&limit=20&offset=0
+GET /api/v1/books?limit=20&offset=0
+GET /api/v1/books/11
+GET /api/v1/books/11/text?offset=0&limit=40000
+GET /api/v1/books/11/recommendations?limit=5
+```
 
-Recherche par expression régulière :
+La recherche par mots-clés utilise une logique **OU** pour plusieurs mots.
+Le score par défaut est la somme des occurrences des racines reconnues,
+rapportée à un million de mots du livre. Le tri PageRank utilise la centralité
+globale du livre dans le graphe, parmi les livres correspondant à la recherche.
+Le tri et la pagination sont réalisés dans PostgreSQL.
 
-    GET /api/v1/search/regex?q=alice%7Crabbit
+Les RegEx s'appliquent à chaque **racine entière de l'index**, et non aux
+phrases du texte original. Ainsi, `alice` est normalisé en `alic` en recherche
+par mots-clés ; en mode RegEx, utiliser `alic` ou `alic.*`.
 
-Les expressions régulières s'appliquent aux termes de l'index
-inversé, pas directement aux phrases complètes des livres.
+La syntaxe de l'automate comprend les caractères littéraux, `.`, `|`, les
+groupes `(...)`, les répétitions `*`, `+`, `?` et l'échappement par antislash.
+Les classes `[a-z]`, les ancres `^` et `$` et les raccourcis comme `\d` ne sont
+pas implémentés comme dans les moteurs RegEx généralistes. Un motif est limité
+à 100 caractères ; une expression reconnaissant plus de 20 000 termes est
+refusée avec HTTP 422.
 
-Catalogue :
+Le frontend utilise `/api/v1` sur la même origine. Avec Compose, nginx relaie
+les appels à FastAPI ; avec `npm run dev`, Vite les relaie vers le backend local.
 
-React envoie ses requêtes à `/api/v1`. Avec Compose, nginx les transmet à FastAPI ; avec `npm run dev` (sans Docker), le serveur Vite les transmet à `http://127.0.0.1:8000`.
+## Graphe et stockage
 
-Les ports Compose sont accessibles depuis la machine qui exécute Docker. Pour une démonstration depuis un autre appareil, il faudra rendre le port du frontend accessible sur le réseau local.
+| Donnée | Stockage |
+|---|---|
+| Textes Gutenberg | fichiers `.txt`, volume Docker `corpus` |
+| Métadonnées | PostgreSQL : `books` |
+| Index inversé | PostgreSQL : `books_v2`, `terms_v2`, `postings_v2` |
+| Similarités de Jaccard | PostgreSQL : `book_similarities` |
+| Centralité PageRank | PostgreSQL : `book_scores` |
+| Comptes et sessions | PostgreSQL : `users`, `auth_sessions` |
+| Favoris et historique | PostgreSQL : `user_favorites`, `search_history` |
 
-    GET /api/v1/books
-    GET /api/v1/books/11
+Le graphe compare le vocabulaire discriminant des livres : racines présentes
+dans au moins deux livres et dans au plus 50 % du corpus. Le seuil Jaccard par
+défaut est de 0,20 ; jusqu'à cinq voisins supplémentaires de similarité
+positive sont retenus par livre. Des livres peuvent rester isolés lorsqu'ils
+n'ont aucun vocabulaire retenu en commun avec les autres.
 
-Les routes de recherche et de catalogue prennent en charge
-la pagination.
+Lors d'un redémarrage, le corpus est vérifié et l'index et le graphe existants
+sont réutilisés. Le contrôle du graphe repose sur le nombre de livres ayant
+un score. **Après une modification des paramètres du graphe**, forcer son
+recalcul :
 
-## Tests
+```bash
+docker compose run --rm graph-init python -m scripts.build_graph --force
+```
 
-41 tests backend ont réussi localement.
+## Tests et validation finale
 
-Utiliser uniquement la base de test daar_test pour la suite
-d'intégration : certaines fixtures réinitialisent les tables.
+Validation du **17 novembre 2026**, sur le code du commit `3ae4534` :
 
-Lorsque la base daar_test existe :
+- **98 tests backend réussis**, aucun ignoré, avec la base isolée `daar_test`.
+- Installation complète depuis une copie du code commité, sans `.env`, dans
+  le projet Docker séparé `daar-fresh-verif`, avec des volumes neufs.
+- Les 110 fichiers suivis par Git de cette copie ont été comparés au commit.
+- Corpus téléchargé et vérifié, index et graphe reconstruits ; les trois
+  tâches d'initialisation ont terminé avec le code 0.
+- PostgreSQL, backend et frontend : `healthy`.
+- **13 contrôles fonctionnels réussis** sur l'installation neuve, puis sur AWS :
+  interface et proxy nginx, santé API, catalogue, recherche et pagination,
+  PageRank, RegEx, rejet d'un motif invalide, recommandations, lecture et
+  cohérence des données en base.
+- Accès public AWS vérifié : interface HTTP 200, API opérationnelle et recherche
+  `alice` renvoyant 309 livres.
 
-    docker compose run --rm -T --no-deps -e DB_NAME=daar_test -e DAAR_TEST_DB=1 backend python -m pytest -q
+### Relancer la suite backend
 
-Ne jamais lancer cette suite sur la base principale daar.
+Utiliser uniquement la base **`daar_test`** : les fixtures réinitialisent ses
+tables. Les tests d'intégration sont ignorés si `DB_NAME=daar_test` et
+`DAAR_TEST_DB=1` ne sont pas tous deux définis.
 
-Les dépendances de développement sont déclarées dans
-backend/requirements-dev.txt.
+Si cette base n'existe pas encore, la créer une seule fois :
 
-La CI utilise backend/requirements-dev.txt.
-Le fichier .gitlab-ci.yml comporte les jobs backend_tests
-et frontend_build.
+```bash
+docker compose exec db sh -c 'createdb -U "$POSTGRES_USER" daar_test'
+```
 
-Les 41 tests locaux ne constituent pas à eux seuls une nouvelle
-validation de la CI après les derniers commits.
+Puis lancer les tests avec l'image locale, qui inclut par défaut les
+dépendances de développement :
+
+```bash
+docker compose run --rm -T --no-deps \
+  -e DB_NAME=daar_test -e DAAR_TEST_DB=1 -e PRELOAD_VOCABULARY=0 \
+  backend python -m pytest tests/ -q
+```
+
+Ne pas exécuter cette suite sur la base principale `daar`. Les dépendances de
+test sont déclarées dans `backend/requirements-dev.txt`. La CI GitLab contient
+les jobs `backend_tests` et `frontend_build` ; les validations ci-dessus ne
+constituent pas une confirmation d'un nouveau pipeline distant.
 
 ## Performances
 
-Voir `docs/PERFORMANCES_V2.md` (mesures V2, graphiques SVG) :
+Voir [PERFORMANCES_V2.md](docs/PERFORMANCES_V2.md) pour les mesures locales,
+leur méthode, les données CSV et les graphiques. Ces chiffres ne sont pas des
+mesures de charge de l'instance AWS.
 
-- mot-clé : 2 ms (100 livres) à 19 ms (1 700 livres), croissance linéaire ;
-- regex par automate : 25 à 32 ms avec préfixe littéral (1,1 s avant
-  optimisation), ~560 ms sans préfixe ; mêmes résultats que PostgreSQL ;
-- suggestions : 10 ms (1,3 s quand le graphe était un fichier JSON) ;
-- test de charge : ~270 requêtes/s, aucune erreur jusqu'à 16 clients.
+- Recherche par mot-clé sur le corpus complet, sans filtre artificiel
+  d'échantillonnage : environ 2 à 7 ms selon le mot.
+- RegEx avec préfixe littéral : environ 25 à 32 ms ; sans préfixe, environ
+  560 ms pour le motif mesuré.
+- Recommandations : environ 10 ms.
+- Charge locale : environ 270 requêtes/s, aucune erreur jusqu'à 16 clients
+  dans la campagne mesurée.
 
-Relancer les mesures :
+Reproduire les mesures :
 
 ```bash
 docker compose exec backend python -m scripts.benchmark_v2 --out /tmp/bench
@@ -200,63 +257,82 @@ docker cp "$(docker compose ps -q backend)":/tmp/bench/. docs/benchmarks_v2/
 python3 scripts/plot_benchmark_v2.py docs/benchmarks_v2
 ```
 
-Les mesures de la V1 restent dans `docs/PERFORMANCES_P1.md` pour comparaison.
+Les validations antérieures restent dans
+[VALIDATION_P1.md](docs/VALIDATION_P1.md), et les mesures V1 dans
+[PERFORMANCES_P1.md](docs/PERFORMANCES_P1.md).
 
-## Architecture des données
+## Déploiement AWS
 
-| Donnée | Stockage |
-|---|---|
-| Texte des livres | fichiers `.txt`, volume Docker `corpus` |
-| Index inversé | PostgreSQL : `terms_v2` (racines), `postings_v2` (livre, racine, fréquence) |
-| Graphe de Jaccard | PostgreSQL : `book_similarities` (arêtes pondérées) |
-| Centralité PageRank | PostgreSQL : `book_scores` |
-| Comptes, favoris, historique | PostgreSQL : `users`, `user_favorites`, `search_history` |
-
-Chaîne d'initialisation (une seule commande, `docker compose up`) :
-`corpus-init` (télécharge et vérifie les 1 700 livres) → `index-init`
-(index inversé) → `graph-init` (Jaccard + PageRank, ~3 min) → `backend` → `frontend`.
-Chaque étape est sautée si son résultat existe déjà.
-
-Choix d'indexation :
-
-- découpage en mots Unicode, minuscules, mots vides retirés, racinisation
-  Snowball (anglais, français, allemand) : `whales` et `whale` partagent une racine ;
-- le graphe de Jaccard compare le vocabulaire discriminant de chaque livre
-  (racines présentes dans 2 livres au moins et 50 % du corpus au plus), seuil 0,20,
-  plus les 5 plus proches voisins de chaque livre ;
-- la regex est exécutée par notre automate (Thompson + déterminisation à la
-  volée) sur les racines de l'index, gardées triées en mémoire.
-
-## Déploiement sur un serveur (AWS)
+Pour installer depuis zéro sur un serveur disposant de Docker et de ressources
+suffisantes pour l'indexation et le calcul du graphe :
 
 ```bash
-cp .env.example .env   # puis définir POSTGRES_PASSWORD
-docker compose -f compose.yaml -f compose.aws.yaml up -d
+cp .env.example .env
+# Définir un mot de passe PostgreSQL propre au serveur dans .env.
+docker compose -f compose.yaml -f compose.aws.yaml up -d --build
 ```
 
-L'application est alors servie sur le port 80. Le premier lancement indexe les
-livres et calcule le graphe : une instance d'au moins 2 Go de mémoire est
-conseillée (besoin non mesuré précisément).
+La surcharge AWS publie le frontend sur le port 80, retire l'exposition directe
+du backend et exige `POSTGRES_PASSWORD`. Le groupe de sécurité EC2 doit
+autoriser HTTP TCP 80 pour l'accès public ; PostgreSQL et le port 8000 du
+backend n'ont pas besoin d'être ouverts sur Internet.
 
-## Fonctionnalités
+### Instance de démonstration validée
 
-- Recherche par mot-clé et par RegEx (automate sur les racines de l'index)
-- Classement par fréquence normalisée ou par PageRank
-- Suggestions : voisins Jaccard des deux meilleurs résultats
-- Lecture du texte complet d'un livre
-- Comptes utilisateurs ; favoris et historique stockés dans PostgreSQL
-  (retrouvés sur n'importe quelle machine)
+- Région : `eu-north-1` ; Debian 13, architecture x86-64.
+- Instance `t3.micro`, environ 1 Go de RAM, disque de 8 Go et 1 Go de swap.
+- Application : [http://13.61.8.67/](http://13.61.8.67/).
+- Version applicative déployée : `3ae4534`.
+
+Sur cette petite instance, les images ont été construites sur le serveur,
+puis le corpus et la base issus de l'installation neuve validée ont été
+transférés. L'index et le graphe ont été restaurés, sans recalcul sur EC2.
+Ce déploiement valide le service sur cette instance, pas la capacité à y
+reconstruire tout le corpus depuis zéro.
+
+Le dossier du déploiement est `/home/admin/daar-release-3ae4534`, avec le projet
+Compose `daar`. Un fichier propre au serveur, `compose.ec2.yaml`, limite les
+journaux et ajuste PostgreSQL : `shared_buffers=64MB`, `max_connections=40`,
+`max_wal_size=256MB` et `min_wal_size=80MB`. Ce fichier n'est pas livré dans le
+dépôt ; il s'ajoute aux deux fichiers Compose du projet.
+
+Pour consulter les services du déploiement existant, depuis une session SSH :
+
+```bash
+cd /home/admin/daar-release-3ae4534
+sudo docker compose -p daar \
+  -f compose.yaml -f compose.aws.yaml -f compose.ec2.yaml ps -a
+```
+
+HTTPS et un certificat TLS restent à configurer avant une utilisation avec
+des identifiants réels. Le déploiement actuel sert uniquement en HTTP.
+
+## Arrêt et conservation des données
+
+En local, arrêter les conteneurs en conservant les volumes :
+
+```bash
+docker compose down
+docker compose up -d
+```
+
+Les volumes `pgdata` et `corpus` conservent respectivement la base et les textes.
+**Ne pas utiliser `docker compose down -v` pour conserver ces données.**
+Sur AWS, conserver également le nom de projet `daar` et les trois fichiers
+Compose dans les commandes de gestion du déploiement existant.
 
 ## Livraison
 
-Le dépôt contient le code source et les scripts nécessaires
-pour récupérer le corpus externe.
+Le dépôt contient le code et les scripts nécessaires pour récupérer le corpus.
+Les textes volumineux, les volumes PostgreSQL et le fichier `.env` ne doivent
+pas être inclus dans l'archive de rendu.
 
-Le corpus volumineux et les volumes PostgreSQL ne sont pas
-inclus dans l'archive de livraison.
-
-Créer l'archive de rendu (≤ 30 Mo, sans `.env` ni données générées) :
+Créer l'archive finale, avec le rapport et la vidéo :
 
 ```bash
 scripts/make_archive.sh --noms NOM1-NOM2-NOM3 --rapport rapport.pdf --video video.mp4
 ```
+
+Le script vérifie la limite de **30 Mo**. La validation de l'application ne
+remplace pas la relecture du rapport, de la vidéo et de l'archive finale selon
+les consignes du rendu.
