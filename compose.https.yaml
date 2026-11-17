@@ -1,0 +1,22 @@
+# Surcharge HTTPS, apres obtention d'un certificat nomme "lisiere".
+# Ajouter apres compose.aws.yaml et les eventuelles surcharges du serveur.
+services:
+  backend:
+    environment:
+      AUTH_COOKIE_SECURE: "true"
+
+  frontend:
+    ports: !override
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./frontend/nginx.https.conf:/etc/nginx/conf.d/default.conf:ro
+      - ${ACME_WEBROOT:-/var/lib/letsencrypt}:/var/lib/letsencrypt:ro
+      - ${LETSENCRYPT_DIR:-/etc/letsencrypt}/live/lisiere:/etc/letsencrypt/live/lisiere:ro
+      - ${LETSENCRYPT_DIR:-/etc/letsencrypt}/archive/lisiere:/etc/letsencrypt/archive/lisiere:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s

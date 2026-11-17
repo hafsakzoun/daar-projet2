@@ -6,11 +6,11 @@ Lisière permet de rechercher dans un corpus de livres par mots-clés ou par
 expressions régulières, de classer les résultats et de découvrir des livres
 similaires à partir d'un graphe de Jaccard.
 
-**Démonstration AWS : [http://13.61.8.67/](http://13.61.8.67/).**
-Le déploiement actuel utilise HTTP ; HTTPS n'est pas configuré. Pour les essais
-des comptes, utiliser des identifiants fictifs et un mot de passe réservé à la
-démonstration : HTTP ne chiffre pas les échanges. L'adresse publique peut
-changer après un arrêt et un redémarrage de l'instance EC2.
+**Démonstration AWS : [https://13.61.8.67/](https://13.61.8.67/).**
+Le déploiement utilise un certificat gratuit Let's Encrypt pour cette adresse IP,
+avec redirection HTTP vers HTTPS et renouvellement automatique. L'adresse
+publique peut changer après un arrêt et un redémarrage de l'instance EC2 ;
+il faut alors réémettre le certificat pour la nouvelle adresse.
 
 ## Fonctionnalités
 
@@ -208,6 +208,8 @@ Validation du **17 novembre 2026**, sur le code du commit `3ae4534` :
   cohérence des données en base.
 - Accès public AWS vérifié : interface HTTP 200, API opérationnelle et recherche
   `alice` renvoyant 309 livres.
+- Après activation de HTTPS : certificat vérifié, redirection HTTP 308 vers
+  HTTPS et 13 contrôles fonctionnels réussis via la connexion chiffrée.
 
 ### Relancer la suite backend
 
@@ -281,8 +283,8 @@ backend n'ont pas besoin d'être ouverts sur Internet.
 
 - Région : `eu-north-1` ; Debian 13, architecture x86-64.
 - Instance `t3.micro`, environ 1 Go de RAM, disque de 8 Go et 1 Go de swap.
-- Application : [http://13.61.8.67/](http://13.61.8.67/).
-- Version applicative déployée : `3ae4534`.
+- Application : [https://13.61.8.67/](https://13.61.8.67/).
+- Backend et données validés : `3ae4534` ; favicon Lisière : `d466011`.
 
 Sur cette petite instance, les images ont été construites sur le serveur,
 puis le corpus et la base issus de l'installation neuve validée ont été
@@ -301,11 +303,15 @@ Pour consulter les services du déploiement existant, depuis une session SSH :
 ```bash
 cd /home/admin/daar-release-3ae4534
 sudo docker compose -p daar \
-  -f compose.yaml -f compose.aws.yaml -f compose.ec2.yaml ps -a
+  -f compose.yaml -f compose.aws.yaml -f compose.ec2.yaml -f compose.https.yaml ps -a
 ```
 
-HTTPS et un certificat TLS restent à configurer avant une utilisation avec
-des identifiants réels. Le déploiement actuel sert uniquement en HTTP.
+La surcharge `compose.https.yaml` active HTTPS sur le déploiement existant,
+en complément des fichiers de base, AWS et EC2. Le port
+443 doit être autorisé dans le groupe de sécurité EC2 ; le port 80 reste ouvert
+pour la validation du certificat et redirige vers HTTPS. Les cookies de session
+sont marqués `Secure`. Voir [HTTPS.md](docs/HTTPS.md) pour la configuration, le
+renouvellement automatique et les commandes de maintenance.
 
 ## Arrêt et conservation des données
 
@@ -318,8 +324,8 @@ docker compose up -d
 
 Les volumes `pgdata` et `corpus` conservent respectivement la base et les textes.
 **Ne pas utiliser `docker compose down -v` pour conserver ces données.**
-Sur AWS, conserver également le nom de projet `daar` et les trois fichiers
-Compose dans les commandes de gestion du déploiement existant.
+Sur AWS, conserver le nom de projet `daar` et les quatre fichiers Compose
+(base, AWS, EC2 et HTTPS) pour gérer le déploiement existant.
 
 ## Livraison
 
