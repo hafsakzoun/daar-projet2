@@ -165,7 +165,7 @@ pas implémentés comme dans les moteurs RegEx généralistes. Un motif est limi
 refusée avec HTTP 422.
 
 Le frontend utilise `/api/v1` sur la même origine. Avec Compose, nginx relaie
-les appels à FastAPI ; avec `npm run dev`, Vite les relaie vers le backend local.
+les appels à FastAPI , avec `npm run dev`, Vite les relaie vers le backend local.
 
 ## Graphe et stockage
 
@@ -181,7 +181,7 @@ les appels à FastAPI ; avec `npm run dev`, Vite les relaie vers le backend loca
 
 Le graphe compare le vocabulaire discriminant des livres : racines présentes
 dans au moins deux livres et dans au plus 50 % du corpus. Le seuil Jaccard par
-défaut est de 0,20 ; jusqu'à cinq voisins supplémentaires de similarité
+défaut est de 0,20 , jusqu'à cinq voisins supplémentaires de similarité
 positive sont retenus par livre. Des livres peuvent rester isolés lorsqu'ils
 n'ont aucun vocabulaire retenu en commun avec les autres.
 
