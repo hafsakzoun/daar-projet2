@@ -3,7 +3,8 @@
 x-backend-image: &backend-image
   build:
     context: ./backend
-  image: lisiere-backend:latest
+  # En CD, BACKEND_IMAGE pointe vers l'image construite par GitLab CI.
+  image: ${BACKEND_IMAGE:-lisiere-backend:latest}
 
 services:
   db:
@@ -106,7 +107,7 @@ services:
   frontend:
     build:
       context: ./frontend
-    image: lisiere-frontend:latest
+    image: ${FRONTEND_IMAGE:-lisiere-frontend:latest}
     ports:
       # FRONTEND_BIND=0.0.0.0 pour ouvrir l'application aux autres
       # machines du réseau (démonstration sur plusieurs appareils).

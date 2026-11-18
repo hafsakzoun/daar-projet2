@@ -1,0 +1,45 @@
+requete,classement,top3
+whale,occurrences,"✓ Moby-Dick; or, The Whale ; ✓ Moby Dick; Or, The Whale ; ✓ Moby Dick; Or, The Whale"
+whale,pagerank,"✗ The Old Curiosity Shop ; ✗ Varney the vampyre; or, the feast of blood ; ✗ Dombey and Son"
+whale,produit,"✓ Moby Dick; Or, The Whale ; ✓ Moby-Dick; or, The Whale ; ✓ Moby Dick; Or, The Whale"
+whale,fusion,"✓ Moby Dick; Or, The Whale ; ✓ Moby Dick; Or, The Whale ; ✓ Moby-Dick; or, The Whale"
+sherlock holmes,occurrences,✓ The Return of Sherlock Holmes ; ✓ The Return of Sherlock Holmes ; ✓ The case-book of Sherlock Holmes
+sherlock holmes,pagerank,✗ Our Mutual Friend ; ✗ Jane Eyre: An Autobiography ; ✗ Fairy Tales of Hans Christian Andersen
+sherlock holmes,produit,✓ The Return of Sherlock Holmes ; ✓ The Return of Sherlock Holmes ; ✓ The Adventures of Sherlock Holmes
+sherlock holmes,fusion,✗ The Lock and Key Library: Classic Mystery and Dete ; ✓ The Return of Sherlock Holmes ; ✓ The Return of Sherlock Holmes
+vampire,occurrences,✓ Carmilla ; ✗ Russian Fairy Tales: A Choice Collection of Muscov ; ✗ Modern Greek Folklore and Ancient Greek Religion: 
+vampire,pagerank,"✗ The Old Curiosity Shop ; ✓ Varney the vampyre; or, the feast of blood ; ✗ The Wandering Jew — Complete"
+vampire,produit,"✓ Varney the vampyre; or, the feast of blood ; ✗ Modern Greek Folklore and Ancient Greek Religion:  ; ✗ Weird Tales, Volume 1, Number 1, March 1923: The u"
+vampire,fusion,"✓ Varney the vampyre; or, the feast of blood ; ✗ Weird Tales, Volume 1, Number 1, March 1923: The u ; ✗ The Count of Monte Cristo"
+pirate,occurrences,✗ Peter Pan : [Peter and Wendy] ; ✗ Peter and Wendy ; ✗ The Story of Doctor Dolittle
+pirate,pagerank,"✗ The Old Curiosity Shop ; ✗ Varney the vampyre; or, the feast of blood ; ✗ The Wandering Jew — Complete"
+pirate,produit,✓ The Pirate: Andrew Lang Edition ; ✗ Peter Pan : [Peter and Wendy] ; ✗ Peter and Wendy
+pirate,fusion,"✓ The Pirate: Andrew Lang Edition ; ✗ Captain Canot; Or, Twenty Years of an African Slav ; ✗ Moby Dick; Or, The Whale"
+alice,occurrences,✓ Alice in Wonderland: A Dramatization of Lewis Carr ; ✗ Through the Looking-Glass ; ✓ Alice's Adventures in Wonderland
+alice,pagerank,✗ The Wandering Jew — Complete ; ✗ Dombey and Son ; ✗ Nicholas Nickleby
+alice,produit,✓ Alice in Wonderland: A Dramatization of Lewis Carr ; ✓ Alice's Adventures in Wonderland ; ✓ Alice's Adventures in Wonderland: Illustrated by A
+alice,fusion,"✗ Traditions of Lancashire, Volume 2 ; ✗ Dombey and Son ; ✗ What Will People Say? A Novel"
+napoleon,occurrences,"✓ Napoleon's Letters to Josephine, 1796-1812: For th ; ✓ Napoleon ; ✓ Memoirs of Napoleon Bonaparte — Complete"
+napoleon,pagerank,"✗ The Wandering Jew — Complete ; ✗ The Mysteries of London, v. 4/4 ; ✗ Mosses from an old manse"
+napoleon,produit,✓ Napoleon ; ✓ Memoirs of Napoleon Bonaparte — Complete ; ✗ War and Peace
+napoleon,fusion,✗ War and Peace ; ✓ Napoleon ; ✗ Stonewall Jackson and the American Civil War
+egypt,occurrences,"✓ An Account of Egypt ; ✗ A New System; or, an Analysis of Antient Mythology ; ✗ Against Apion"
+egypt,pagerank,"✗ Varney the vampyre; or, the feast of blood ; ✗ The Wandering Jew — Complete ; ✗ Little Dorrit"
+egypt,produit,✗ The Outline of History: Being a Plain History of L ; ✓ An Account of Egypt ; ✗ Morals and Dogma of the Ancient and Accepted Scott
+egypt,fusion,✗ Morals and Dogma of the Ancient and Accepted Scott ; ✗ The Outline of History: Being a Plain History of L ; ✗ Napoleon
+ghost,occurrences,✓ The sociable ghost : Being the adventures of a rep ; ✓ The Canterville Ghost ; ✓ A Christmas Carol in Prose; Being a Ghost Story of
+ghost,pagerank,"✗ The Old Curiosity Shop ; ✗ Varney the vampyre; or, the feast of blood ; ✗ The Wandering Jew — Complete"
+ghost,produit,✓ A Christmas Carol in Prose; Being a Ghost Story of ; ✗ A Christmas Carol ; ✗ A Christmas Carol
+ghost,fusion,"✗ Bleak House ; ✗ Weird Tales, Volume 1, Number 4, June, 1923: The u ; ✗ The Old Curiosity Shop"
+garden,occurrences,✗ The First Book of Adam and Eve ; ✓ The Secret Garden ; ✗ Royal Palaces and Parks of France
+garden,pagerank,"✗ The Old Curiosity Shop ; ✗ Varney the vampyre; or, the feast of blood ; ✗ The Wandering Jew — Complete"
+garden,produit,✗ Fairy Tales of Hans Christian Andersen ; ✓ The Secret Garden ; ✓ The Secret Garden
+garden,fusion,"✗ Fairy Tales of Hans Christian Andersen ; ✗ Varney the vampyre; or, the feast of blood ; ✗ Mosses from an old manse"
+witch,occurrences,✓ The Wonders of the Invisible World: Being an Accou ; ✗ The Wonderful Wizard of Oz ; ✗ Daemonologie.
+witch,pagerank,"✗ The Old Curiosity Shop ; ✗ Varney the vampyre; or, the feast of blood ; ✗ The Wandering Jew — Complete"
+witch,produit,"✗ Memoirs of Extraordinary Popular Delusions and the ; ✓ Salem Witchcraft, Volumes I and II: With an Accoun ; ✗ The Wonderful Wizard of Oz"
+witch,fusion,"✗ Memoirs of Extraordinary Popular Delusions and the ; ✓ Salem Witchcraft, Volumes I and II: With an Accoun ; ✗ Mosses from an old manse"
+recipe,occurrences,✓ Science in the Kitchen: A Scientific Treatise On F ; ✓ A guide to modern cookery ; ✓ Cookery and Dining in Imperial Rome
+recipe,pagerank,✗ The Old Curiosity Shop ; ✗ The Wandering Jew — Complete ; ✗ Dombey and Son
+recipe,produit,✗ The Book of Household Management ; ✓ Science in the Kitchen: A Scientific Treatise On F ; ✓ Canoe and Camp Cookery: A Practical Cook Book for 
+recipe,fusion,"✗ The Book of Household Management ; ✗ The Country of the Blind, and Other Stories ; ✓ Science in the Kitchen: A Scientific Treatise On F"

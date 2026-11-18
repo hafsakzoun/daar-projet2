@@ -266,6 +266,21 @@ Les validations antérieures restent dans
 [VALIDATION_P1.md](docs/VALIDATION_P1.md), et les mesures V1 dans
 [PERFORMANCES_P1.md](docs/PERFORMANCES_P1.md).
 
+## Pertinence du classement
+
+Voir [PERTINENCE.md](docs/PERTINENCE.md) : 11 requêtes jugées sur un critère
+objectif. La fréquence normalisée place un livre pertinent en tête dans 9 cas
+sur 11 (nDCG@10 = 0,65) ; le PageRank seul, indépendant de la requête, sert à
+repérer les ouvrages centraux du corpus.
+
+## Intégration et déploiement continus
+
+Le pipeline GitLab ([.gitlab-ci.yml](.gitlab-ci.yml)) lance les tests backend
+(unitaires et intégration sur PostgreSQL), le lint et le build React, vérifie
+les fichiers Compose, publie les images sur le registre GitLab (branche `main`)
+et propose un déploiement manuel vers l'instance AWS. Configuration :
+[CI_CD.md](docs/CI_CD.md).
+
 ## Déploiement AWS
 
 Pour installer depuis zéro sur un serveur disposant de Docker et de ressources
