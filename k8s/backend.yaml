@@ -1,0 +1,65 @@
+# API FastAPI : 2 répliques derrière le Service « backend ».
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  selector:
+    app: backend
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 2
+  # Au premier lancement, les pods attendent la fin de l'indexation (~30 min).
+  progressDeadlineSeconds: 7200
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      initContainers:
+        # Bloque le démarrage tant que l'index et le graphe ne sont pas prêts.
+        - name: wait-data
+          image: lisiere-backend
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "scripts.wait_ready"]
+          envFrom: &env
+            - configMapRef: {name: lisiere-config}
+            - secretRef: {name: lisiere-db}
+      containers:
+        - name: api
+          image: lisiere-backend
+          imagePullPolicy: IfNotPresent
+          envFrom: *env
+          env:
+            - name: PRELOAD_VOCABULARY
+              value: "1"
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet: {path: /api/v1/health, port: 8000}
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: {path: /api/v1/health, port: 8000}
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            requests: {cpu: 100m, memory: 200Mi}
+            limits: {memory: 512Mi}
+          volumeMounts:
+            - name: corpus
+              mountPath: /data
+              readOnly: true
+      volumes:
+        - name: corpus
+          persistentVolumeClaim:
+            claimName: corpus

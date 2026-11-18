@@ -1,0 +1,49 @@
+# Initialisation des données, équivalent des services corpus-init,
+# index-init et graph-init de Compose. Les initContainers s'exécutent
+# l'un après l'autre ; chaque étape passe son tour si son résultat existe.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: lisiere-init
+spec:
+  backoffLimit: 4
+  template:
+    metadata:
+      labels:
+        app: lisiere-init
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+        - name: wait-db
+          image: postgres:16
+          command: ["sh", "-c", "until pg_isready -h db -p 5432; do sleep 2; done"]
+        - name: corpus
+          image: lisiere-backend
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "app.services.auto_install"]
+          envFrom: &env
+            - configMapRef: {name: lisiere-config}
+            - secretRef: {name: lisiere-db}
+          volumeMounts: &corpus
+            - name: corpus
+              mountPath: /data
+        - name: index
+          image: lisiere-backend
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "app.services.auto_index"]
+          envFrom: *env
+          volumeMounts: *corpus
+          resources:
+            limits: {memory: 1Gi}
+      containers:
+        - name: graph
+          image: lisiere-backend
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "scripts.build_graph"]
+          envFrom: *env
+          resources:
+            limits: {memory: 1Gi}
+      volumes:
+        - name: corpus
+          persistentVolumeClaim:
+            claimName: corpus

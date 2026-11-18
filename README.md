@@ -281,6 +281,17 @@ les fichiers Compose, publie les images sur le registre GitLab (branche `main`)
 et propose un déploiement manuel vers l'instance AWS. Configuration :
 [CI_CD.md](docs/CI_CD.md).
 
+## Kubernetes
+
+L'application peut aussi être déployée sur Kubernetes (testé sur minikube) :
+PostgreSQL en StatefulSet, Job d'initialisation, backend et frontend répliqués,
+mise à l'échelle automatique du backend. Manifestes dans [`k8s/`](k8s),
+instructions dans [KUBERNETES.md](docs/KUBERNETES.md).
+
+```bash
+kubectl apply -k k8s/
+```
+
 ## Déploiement AWS
 
 Pour installer depuis zéro sur un serveur disposant de Docker et de ressources

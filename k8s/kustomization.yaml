@@ -1,0 +1,48 @@
+# Déploiement Kubernetes de Lisière.
+#   kubectl apply -k k8s/
+# Voir docs/KUBERNETES.md.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: lisiere
+
+resources:
+  - namespace.yaml
+  - postgres.yaml
+  - corpus-pvc.yaml
+  - init-job.yaml
+  - backend.yaml
+  - frontend.yaml
+  - hpa.yaml
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: lisiere
+
+configMapGenerator:
+  - name: lisiere-config
+    literals:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=daar
+      - DB_USER=daar_user
+      - CORPUS_URL=https://github.com/ouumm/daar-corpus-public/releases/download/corpus-v1/corpus-1700.tar.gz
+      - GRAPH_THRESHOLD=0.20
+      - GRAPH_MAX_DF=0.5
+      - GRAPH_MIN_NEIGHBORS=5
+
+# Mot de passe de démonstration (même valeur par défaut que compose.yaml).
+# En production : remplacer par un Secret créé hors du dépôt.
+secretGenerator:
+  - name: lisiere-db
+    literals:
+      - DB_PASSWORD=daar_dev_only
+
+# Images construites en local (minikube image load) ; en CI/CD, remplacer
+# par celles du registre GitLab :
+#   kustomize edit set image lisiere-backend=registry.gitlab.com/<projet>/backend:<sha>
+images:
+  - name: lisiere-backend
+    newTag: latest
+  - name: lisiere-frontend
+    newTag: latest

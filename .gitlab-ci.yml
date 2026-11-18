@@ -2,6 +2,7 @@
 #
 #   test    : tests backend (unitaires + intégration sur PostgreSQL),
 #             lint et build React, validation des fichiers Compose
+#             et des manifestes Kubernetes
 #   build   : images Docker publiées dans le registre GitLab (branche main)
 #   deploy  : mise à jour de l'instance AWS EC2, déclenchée à la main
 #
@@ -74,6 +75,18 @@ compose_config:
     # Erreur de syntaxe ou de surcharge => échec du pipeline.
     - docker compose -f compose.yaml config -q
     - docker compose -f compose.yaml -f compose.aws.yaml config -q
+
+k8s_manifests:
+  stage: test
+  image:
+    name: ghcr.io/yannh/kubeconform:v0.6.7-alpine
+    entrypoint: [""]
+  before_script:
+    - apk add --no-cache kubectl
+  script:
+    # Rendu kustomize puis validation stricte contre les schémas Kubernetes.
+    - kubectl kustomize k8s > k8s-rendered.yaml
+    - /kubeconform -strict -summary k8s-rendered.yaml
 
 # ─────────────────────────── build ───────────────────────────
 

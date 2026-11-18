@@ -1,0 +1,11 @@
+# Textes des 1 700 livres (~1,5 Go), écrits par le Job d'initialisation
+# puis lus par le backend (page de lecture).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: corpus
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 3Gi
