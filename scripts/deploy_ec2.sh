@@ -7,6 +7,23 @@ set -euo pipefail
 : "${DEPLOY_DIR:?}" "${BACKEND_IMAGE:?}" "${FRONTEND_IMAGE:?}"
 cd "$DEPLOY_DIR"
 
+# Secrets Docker du serveur (créés une seule fois, jamais versionnés).
+# Le mot de passe de la base reprend celui de l'ancien .env s'il existe.
+if ! grep -q '^DB_PASSWORD_SECRET=' .env 2>/dev/null; then
+  mkdir -p secrets && chmod 700 secrets
+  current=$(sed -n 's/^POSTGRES_PASSWORD=//p' .env 2>/dev/null | tail -1)
+  if [ -n "$current" ]; then
+    printf '%s' "$current" > secrets/db_password.txt
+  else
+    head -c 24 /dev/urandom | base64 | tr -d '/+=' > secrets/db_password.txt
+  fi
+  # Lisible par l'utilisateur postgres du conteneur ; le dossier reste privé.
+  chmod 644 secrets/db_password.txt
+  sed -i '/^POSTGRES_PASSWORD=/d' .env
+  printf '\nDB_PASSWORD_SECRET=./secrets/db_password.txt\n' >> .env
+  echo "Secret de la base créé dans $DEPLOY_DIR/secrets/."
+fi
+
 COMPOSE=(sudo BACKEND_IMAGE="$BACKEND_IMAGE" FRONTEND_IMAGE="$FRONTEND_IMAGE"
   docker compose -p daar
   -f compose.yaml -f compose.aws.yaml -f compose.ec2.yaml -f compose.https.yaml)

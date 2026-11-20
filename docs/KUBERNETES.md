@@ -81,6 +81,19 @@ kubectl -n lisiere port-forward --address 0.0.0.0 service/frontend 8080:80
 
 puis ouvrir `http://<IP-du-Mac>:8080` sur les autres machines.
 
+## Secrets
+
+- `lisiere-db` (mot de passe PostgreSQL) est généré par Kustomize.
+- `lisiere-smtp` (envoi d'e-mails) est **facultatif** et créé à la main, hors du dépôt :
+
+```bash
+kubectl -n lisiere create secret generic lisiere-smtp \
+  --from-literal=SMTP_HOST=smtp.gmail.com \
+  --from-literal=SMTP_USER=adresse@gmail.com \
+  --from-file=SMTP_PASSWORD=secrets/smtp_password.txt
+kubectl -n lisiere rollout restart deployment/backend
+```
+
 ## Démonstrations utiles
 
 ```bash

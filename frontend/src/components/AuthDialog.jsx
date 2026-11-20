@@ -1,4 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import { postAuth } from "../api/auth.js";
+
+const TITLES = {
+  login: "Se connecter",
+  signup: "Créer un compte",
+  forgot: "Mot de passe oublié",
+};
 
 function AuthDialog({ initialMode, onClose, onLogin }) {
   const dialog = useRef(null);
@@ -6,7 +13,8 @@ function AuthDialog({ initialMode, onClose, onLogin }) {
   const [notice, setNotice] = useState(null);
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState(false);
-  const isSignup = mode === "signup";
+  // Connexion refusée car l'adresse n'est pas encore confirmée.
+  const [unverified, setUnverified] = useState(false);
 
   useEffect(() => {
     const element = dialog.current;
@@ -19,81 +27,80 @@ function AuthDialog({ initialMode, onClose, onLogin }) {
     if (nextMode === mode) return;
     setMode(nextMode);
     setNotice(null);
+    setUnverified(false);
+  }
+
+  async function run(path, payload) {
+    setPending(true);
+    setNotice(null);
+    try {
+      return await postAuth(path, payload);
+    } finally {
+      setPending(false);
+    }
   }
 
   async function submit(event) {
     event.preventDefault();
     if (pending) return;
 
-    const form = event.currentTarget;
-    const fields = new FormData(form);
-    const payload = {
-      email: email.trim(),
-      password: fields.get("password"),
-    };
+    const fields = new FormData(event.currentTarget);
+    const address = email.trim();
 
-    if (isSignup) {
-      payload.first_name = fields.get("firstName").trim();
+    if (mode === "forgot") {
+      const result = await run("password/forgot", { email: address });
+      setNotice({
+        type: result.ok ? "success" : "error",
+        text: result.ok
+          ? "Si un compte correspond à cette adresse, tu vas recevoir un e-mail avec un lien pour choisir un nouveau mot de passe (pense à regarder les spams)."
+          : result.message,
+      });
+      return;
+    }
 
-      if (!payload.first_name) {
+    if (mode === "signup") {
+      const firstName = fields.get("firstName").trim();
+      if (!firstName) {
         setNotice({ type: "error", text: "Renseigne ton prénom." });
         return;
       }
-    }
 
-    setPending(true);
-    setNotice(null);
-
-    try {
-      const endpoint = isSignup ? "signup" : "login";
-      const response = await fetch(`/api/v1/auth/${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+      const result = await run("signup", {
+        email: address,
+        password: fields.get("password"),
+        first_name: firstName,
       });
-
-      if (isSignup && response.status === 409) {
-        setNotice({
-          type: "error",
-          text: "Un compte existe déjà avec cette adresse e-mail.",
-        });
+      if (!result.ok) {
+        setNotice({ type: "error", text: result.message });
         return;
       }
 
-      const expectedStatus = isSignup ? 201 : 200;
-
-      if (response.status !== expectedStatus) {
-        const body = await response.json().catch(() => null);
-        const text =
-          typeof body?.detail === "string"
-            ? body.detail
-            : response.status === 422
-              ? "Vérifie les champs et réessaie."
-              : "Une erreur est survenue. Réessaie dans un instant.";
-
-        setNotice({ type: "error", text });
-        return;
-      }
-
-      if (isSignup) {
-        setEmail(payload.email);
-        setMode("login");
-        setNotice({
-          type: "success",
-          text: "Ton compte a été créé. Tu peux maintenant te connecter.",
-        });
-      } else {
-        const user = await response.json();
-        onLogin(user);
-      }
-    } catch {
+      setMode("login");
       setNotice({
-        type: "error",
-        text: "Impossible de joindre le serveur. Réessaie dans un instant.",
+        type: "success",
+        text: result.body?.verification_required
+          ? `Compte créé. Un e-mail de confirmation a été envoyé à ${address} : clique sur le lien qu’il contient pour activer ton compte.`
+          : "Ton compte a été créé. Tu peux maintenant te connecter.",
       });
-    } finally {
-      setPending(false);
+      return;
     }
+
+    const result = await run("login", { email: address, password: fields.get("password") });
+    if (result.ok) {
+      onLogin(result.body);
+      return;
+    }
+    setUnverified(result.status === 403);
+    setNotice({ type: "error", text: result.message });
+  }
+
+  async function resend() {
+    const result = await run("email/resend", { email: email.trim() });
+    setUnverified(false);
+    setNotice({
+      type: result.ok ? "success" : "error",
+      text: result.ok ? "Un nouvel e-mail de confirmation vient d’être envoyé." : result.message,
+    });
   }
 
   return (
@@ -107,7 +114,7 @@ function AuthDialog({ initialMode, onClose, onLogin }) {
       }}
     >
       <div className="auth-heading">
-        <h2 id="auth-title">{isSignup ? "Créer un compte" : "Se connecter"}</h2>
+        <h2 id="auth-title">{TITLES[mode]}</h2>
 
         <button
           type="button"
@@ -120,28 +127,35 @@ function AuthDialog({ initialMode, onClose, onLogin }) {
         </button>
       </div>
 
-      <div className="auth-switch" role="group" aria-label="Accès au compte">
-        <button
-          type="button"
-          aria-pressed={!isSignup}
-          onClick={() => changeMode("login")}
-          disabled={pending}
-        >
-          Connexion
-        </button>
+      {mode === "forgot" ? (
+        <p className="auth-intro">
+          Indique l’adresse de ton compte : nous t’enverrons un lien pour
+          choisir un nouveau mot de passe.
+        </p>
+      ) : (
+        <div className="auth-switch" role="group" aria-label="Accès au compte">
+          <button
+            type="button"
+            aria-pressed={mode === "login"}
+            onClick={() => changeMode("login")}
+            disabled={pending}
+          >
+            Connexion
+          </button>
 
-        <button
-          type="button"
-          aria-pressed={isSignup}
-          onClick={() => changeMode("signup")}
-          disabled={pending}
-        >
-          Inscription
-        </button>
-      </div>
+          <button
+            type="button"
+            aria-pressed={mode === "signup"}
+            onClick={() => changeMode("signup")}
+            disabled={pending}
+          >
+            Inscription
+          </button>
+        </div>
+      )}
 
       <form key={mode} className="auth-form" onSubmit={submit}>
-        {isSignup && (
+        {mode === "signup" && (
           <label>
             Prénom
             <input
@@ -169,21 +183,34 @@ function AuthDialog({ initialMode, onClose, onLogin }) {
           />
         </label>
 
-        <label>
-          Mot de passe
-          <input
-            name="password"
-            type="password"
-            autoComplete={isSignup ? "new-password" : "current-password"}
-            minLength={isSignup ? 12 : undefined}
-            maxLength={128}
-            aria-describedby={isSignup ? "password-hint" : undefined}
-            readOnly={pending}
-            required
-          />
-        </label>
+        {mode !== "forgot" && (
+          <label>
+            Mot de passe
+            <input
+              name="password"
+              type="password"
+              autoComplete={mode === "signup" ? "new-password" : "current-password"}
+              minLength={mode === "signup" ? 12 : undefined}
+              maxLength={128}
+              aria-describedby={mode === "signup" ? "password-hint" : undefined}
+              readOnly={pending}
+              required
+            />
+          </label>
+        )}
 
-        {isSignup && <small id="password-hint">Au moins 12 caractères.</small>}
+        {mode === "signup" && <small id="password-hint">Au moins 12 caractères.</small>}
+
+        {mode === "login" && (
+          <button
+            type="button"
+            className="auth-link"
+            onClick={() => changeMode("forgot")}
+            disabled={pending}
+          >
+            Mot de passe oublié ?
+          </button>
+        )}
 
         <button
           type="submit"
@@ -192,10 +219,23 @@ function AuthDialog({ initialMode, onClose, onLogin }) {
         >
           {pending
             ? "Patiente…"
-            : isSignup
+            : mode === "signup"
               ? "Créer mon compte"
-              : "Se connecter"}
+              : mode === "forgot"
+                ? "Envoyer le lien"
+                : "Se connecter"}
         </button>
+
+        {mode === "forgot" && (
+          <button
+            type="button"
+            className="auth-link"
+            onClick={() => changeMode("login")}
+            disabled={pending}
+          >
+            ← Retour à la connexion
+          </button>
+        )}
       </form>
 
       {notice && (
@@ -205,6 +245,17 @@ function AuthDialog({ initialMode, onClose, onLogin }) {
         >
           {notice.text}
         </p>
+      )}
+
+      {unverified && (
+        <button
+          type="button"
+          className="btn btn--block auth-resend"
+          onClick={resend}
+          disabled={pending}
+        >
+          Renvoyer l’e-mail de confirmation
+        </button>
       )}
     </dialog>
   );

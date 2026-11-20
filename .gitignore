@@ -25,3 +25,8 @@ data/generated/
 
 # Archive de rendu
 /daar-projet2-*.zip
+
+# Secrets Docker : seuls les fichiers de développement sont versionnés
+/secrets/*
+!/secrets/*.dev
+!/secrets/README.md

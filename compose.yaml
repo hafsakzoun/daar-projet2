@@ -6,13 +6,19 @@ x-backend-image: &backend-image
   # En CD, BACKEND_IMAGE pointe vers l'image construite par GitLab CI.
   image: ${BACKEND_IMAGE:-lisiere-backend:latest}
 
+# Mots de passe transmis en secrets Docker (fichiers dans /run/secrets),
+# jamais en variables d'environnement. Voir secrets/README.md.
+x-db-secret: &db-secret
+  secrets: [db_password]
+
 services:
   db:
     image: postgres:16
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-daar}
       POSTGRES_USER: ${POSTGRES_USER:-daar_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-daar_dev_only}
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    <<: *db-secret
     restart: unless-stopped
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -25,13 +31,13 @@ services:
       retries: 10
 
   corpus-init:
-    <<: *backend-image
+    <<: [*backend-image, *db-secret]
     environment: &db_environment
       DB_HOST: db
       DB_PORT: 5432
       DB_NAME: ${POSTGRES_DB:-daar}
       DB_USER: ${POSTGRES_USER:-daar_user}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-daar_dev_only}
+      DB_PASSWORD_FILE: /run/secrets/db_password
       CORPUS_URL: ${CORPUS_URL:-https://github.com/ouumm/daar-corpus-public/releases/download/corpus-v1/corpus-1700.tar.gz}
     volumes:
       - corpus:/data
@@ -44,7 +50,7 @@ services:
     restart: "no"
 
   index-init:
-    <<: *backend-image
+    <<: [*backend-image, *db-secret]
     environment:
       <<: *db_environment
     volumes:
@@ -61,7 +67,7 @@ services:
   # Graphe de Jaccard + PageRank, stockes dans PostgreSQL
   # (tables book_similarities et book_scores). ~3 min au premier lancement.
   graph-init:
-    <<: *backend-image
+    <<: [*backend-image, *db-secret]
     environment:
       <<: *db_environment
       GRAPH_THRESHOLD: ${GRAPH_THRESHOLD:-0.20}
@@ -77,12 +83,21 @@ services:
 
   backend:
     <<: *backend-image
+    secrets: [db_password, smtp_password]
     ports:
       - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
     environment:
       <<: *db_environment
       # Charge les racines de l'index en memoire au demarrage (RegEx).
       PRELOAD_VOCABULARY: "1"
+      # E-mails (confirmation d'inscription, mot de passe oublié).
+      # Sans SMTP_HOST, rien n'est envoyé : les liens sont écrits dans les logs.
+      APP_URL: ${APP_URL:-http://localhost:5173}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      MAIL_FROM: ${MAIL_FROM:-}
+      SMTP_PASSWORD_FILE: /run/secrets/smtp_password
     volumes:
       # Textes des livres (lecture seule) pour la page de lecture.
       - corpus:/data:ro
@@ -132,3 +147,9 @@ networks:
 volumes:
   pgdata:
   corpus:
+
+secrets:
+  db_password:
+    file: ${DB_PASSWORD_SECRET:-./secrets/db_password.dev}
+  smtp_password:
+    file: ${SMTP_PASSWORD_SECRET:-./secrets/smtp_password.dev}

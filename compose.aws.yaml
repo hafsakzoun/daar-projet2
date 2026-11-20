@@ -2,17 +2,18 @@
 #
 #   docker compose -f compose.yaml -f compose.aws.yaml up -d
 #
-# - l'application est publiee sur le port 80 de toutes les interfaces ;
-# - l'API n'est plus exposee directement (elle passe par nginx) ;
-# - un mot de passe PostgreSQL est obligatoire (fichier .env).
+# - l'application est publiée sur le port 80 de toutes les interfaces ;
+# - l'API n'est plus exposée directement (elle passe par nginx) ;
+# - le mot de passe PostgreSQL doit être un secret propre au serveur
+#   (DB_PASSWORD_SECRET dans .env) : le fichier de développement est refusé.
 services:
-  db:
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD dans .env}
-
   backend:
     ports: !reset []
 
   frontend:
     ports: !override
       - "80:80"
+
+secrets:
+  db_password:
+    file: ${DB_PASSWORD_SECRET:?Definir DB_PASSWORD_SECRET dans .env (voir secrets/README.md)}

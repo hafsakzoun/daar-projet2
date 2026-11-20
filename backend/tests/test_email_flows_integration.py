@@ -1,0 +1,131 @@
+"""Inscription confirmée par e-mail et mot de passe oublié (base daar_test)."""
+
+import dataclasses
+import re
+
+import pytest
+from fastapi.testclient import TestClient
+
+from app.api.v1.endpoints import auth
+from app.main import app
+from app.services import rate_limit
+
+PASSWORD = "mot-de-passe-de-test-123"
+NEW_PASSWORD = "nouveau-mot-de-passe-456"
+
+
+@pytest.fixture
+def mailbox(seeded_db, monkeypatch):
+    """Active l'envoi d'e-mails et capture les messages au lieu de les envoyer."""
+    sent = []
+    monkeypatch.setattr(
+        auth, "settings",
+        dataclasses.replace(auth.settings, smtp_host="smtp.test", smtp_user="u", smtp_password="p"),
+    )
+    monkeypatch.setattr(auth, "send_mail", lambda to, subject, text, html: sent.append((to, subject, text)))
+    monkeypatch.setattr(auth, "_auth_schema_ready", False)
+    rate_limit.reset()
+    yield sent
+    rate_limit.reset()
+
+
+def link_token(message_text):
+    return re.search(r"jeton=([\w-]+)", message_text).group(1)
+
+
+def signup(http, email="lecteur@example.org"):
+    return http.post(
+        "/api/v1/auth/signup",
+        json={"first_name": "Lou", "email": email, "password": PASSWORD},
+    )
+
+
+def login(http, email="lecteur@example.org", password=PASSWORD):
+    return http.post("/api/v1/auth/login", json={"email": email, "password": password})
+
+
+def test_signup_requires_email_confirmation(mailbox):
+    with TestClient(app) as http:
+        response = signup(http)
+        assert response.status_code == 201
+        assert response.json()["verification_required"] is True
+
+        # Un e-mail de confirmation a été envoyé, avec un lien vers le site.
+        to, subject, text = mailbox[-1]
+        assert to == "lecteur@example.org"
+        assert "Confirme" in subject
+        assert "/#/verifier?jeton=" in text
+
+        # Connexion refusée tant que l'adresse n'est pas confirmée.
+        assert login(http).status_code == 403
+
+        token = link_token(text)
+        assert http.post("/api/v1/auth/email/verify", json={"token": token}).status_code == 200
+        assert login(http).status_code == 200
+
+        # Le lien ne sert qu'une fois.
+        assert http.post("/api/v1/auth/email/verify", json={"token": token}).status_code == 400
+
+
+def test_resend_confirmation_replaces_old_link(mailbox):
+    with TestClient(app) as http:
+        signup(http)
+        first = link_token(mailbox[-1][2])
+        assert http.post("/api/v1/auth/email/resend", json={"email": "lecteur@example.org"}).status_code == 202
+        second = link_token(mailbox[-1][2])
+
+        assert first != second
+        assert http.post("/api/v1/auth/email/verify", json={"token": first}).status_code == 400
+        assert http.post("/api/v1/auth/email/verify", json={"token": second}).status_code == 200
+
+
+def test_forgot_password_flow(mailbox):
+    with TestClient(app) as http:
+        signup(http)
+        http.post("/api/v1/auth/email/verify", json={"token": link_token(mailbox[-1][2])})
+        assert login(http).status_code == 200
+
+        response = http.post("/api/v1/auth/password/forgot", json={"email": "lecteur@example.org"})
+        assert response.status_code == 202
+        to, subject, text = mailbox[-1]
+        assert "mot de passe" in subject
+        token = link_token(text)
+
+        # Mot de passe trop court refusé.
+        assert http.post("/api/v1/auth/password/reset", json={"token": token, "password": "court"}).status_code == 422
+
+        assert http.post("/api/v1/auth/password/reset", json={"token": token, "password": NEW_PASSWORD}).status_code == 200
+        # Les sessions ouvertes avec l'ancien mot de passe sont fermées.
+        assert http.get("/api/v1/auth/me").status_code == 401
+
+        assert login(http).status_code == 401
+        assert login(http, password=NEW_PASSWORD).status_code == 200
+        # Lien à usage unique.
+        assert http.post("/api/v1/auth/password/reset", json={"token": token, "password": NEW_PASSWORD}).status_code == 400
+
+
+def test_forgot_password_does_not_reveal_accounts(mailbox):
+    with TestClient(app) as http:
+        known = http.post("/api/v1/auth/password/forgot", json={"email": "personne@example.org"})
+        assert known.status_code == 202
+        assert mailbox == []  # aucun e-mail pour une adresse inconnue
+
+        signup(http)
+        existing = http.post("/api/v1/auth/password/forgot", json={"email": "lecteur@example.org"})
+        assert existing.json() == known.json()
+
+
+def test_invalid_or_expired_reset_token(mailbox):
+    with TestClient(app) as http:
+        response = http.post(
+            "/api/v1/auth/password/reset",
+            json={"token": "x" * 43, "password": NEW_PASSWORD},
+        )
+        assert response.status_code == 400
+
+
+def test_login_is_rate_limited(mailbox):
+    with TestClient(app) as http:
+        codes = [login(http, email="cible@example.org", password="mauvais").status_code for _ in range(10)]
+        assert codes[:8] == [401] * 8
+        assert codes[8:] == [429, 429]

@@ -17,7 +17,7 @@ router = APIRouter()
 
 @router.get("/search", summary="Rechercher des livres")
 def search(
-    q: str = Query(min_length=1),
+    q: str = Query(min_length=1, max_length=200),
     limit: int = Query(default=20, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
     sort: Literal["occurrences", "pagerank"] = Query(default="occurrences"),

@@ -1,5 +1,5 @@
 
-from sqlalchemy import CheckConstraint, ForeignKey, String, Text
+from sqlalchemy import CheckConstraint, ForeignKey, String, Text, true
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from datetime import datetime
 from sqlalchemy import DateTime
@@ -31,6 +31,9 @@ class User(Base):
     first_name: Mapped[str] = mapped_column(String(80))
     email: Mapped[str] = mapped_column(String(254), unique=True)
     password_hash: Mapped[str] = mapped_column(Text)
+    # Vrai par défaut : les comptes créés avant la vérification par e-mail
+    # (ou sans serveur SMTP configuré) restent utilisables.
+    email_verified: Mapped[bool] = mapped_column(default=True, server_default=true())
 
 
 class AuthSession(Base):
@@ -105,3 +108,26 @@ class BookScore(Base):
         primary_key=True,
     )
     pagerank: Mapped[float]
+
+
+class AuthToken(Base):
+    """Jeton à usage unique envoyé par e-mail (confirmation, réinitialisation).
+
+    Seule l'empreinte SHA-256 est stockée : une fuite de la base ne permet
+    pas d'utiliser les liens en cours de validité.
+    """
+
+    __tablename__ = "auth_tokens"
+
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    purpose: Mapped[str] = mapped_column(String(10))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    __table_args__ = (
+        CheckConstraint("purpose IN ('verify', 'reset')"),
+    )

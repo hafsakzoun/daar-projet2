@@ -1565,3 +1565,38 @@ a.book-cover:focus-visible { transform: translateY(-3px); }
 .reader-original-control input { accent-color: var(--accent); }
 .reader-jump { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; margin: 16px 0; color: var(--muted); font-size: 0.8rem; }
 .reader-jump input { width: 5rem; min-height: 40px; padding: 6px 8px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--paper); color: var(--ink); }
+
+/* ───────────────── Compte : liens et pages e-mail ───────────────── */
+
+.auth-intro {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.auth-link {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+.auth-link:hover:not(:disabled) {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.auth-resend {
+  margin-top: 10px;
+}
+
+.page--narrow {
+  max-width: 460px;
+}
+
+.page--narrow .auth-form {
+  margin-top: 0;
+}

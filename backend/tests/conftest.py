@@ -2,6 +2,12 @@ import os
 
 import pytest
 
+# Les tests ne doivent jamais envoyer de vrais e-mails, quelle que soit la
+# configuration de la machine (.env local) : SMTP désactivé avant tout import
+# de l'application. Les tests d'e-mail l'activent eux-mêmes avec un faux envoi.
+for _name in ("SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD", "SMTP_PASSWORD_FILE"):
+    os.environ.pop(_name, None)
+
 
 @pytest.fixture(scope="function")
 def seeded_db():
@@ -58,3 +64,13 @@ def seeded_db():
         db.commit()
 
     yield
+
+
+@pytest.fixture(autouse=True)
+def reset_rate_limits():
+    """Chaque test repart avec des compteurs de tentatives vides."""
+    from app.services import rate_limit
+
+    rate_limit.reset()
+    yield
+    rate_limit.reset()

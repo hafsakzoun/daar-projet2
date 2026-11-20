@@ -266,6 +266,18 @@ Les validations antérieures restent dans
 [VALIDATION_P1.md](docs/VALIDATION_P1.md), et les mesures V1 dans
 [PERFORMANCES_P1.md](docs/PERFORMANCES_P1.md).
 
+## Comptes, e-mails et secrets
+
+- Inscription avec **confirmation de l'adresse par e-mail**, **mot de passe
+  oublié** (lien à usage unique, valable 1 h), protection contre la force brute.
+- E-mails envoyés par SMTP (ex. Gmail) : renseigner `SMTP_HOST`, `SMTP_USER`,
+  `MAIL_FROM`, `APP_URL` dans `.env` et le mot de passe dans un **secret Docker**.
+  Sans SMTP, l'application fonctionne normalement et les liens sont écrits dans
+  `docker compose logs backend`.
+- Les mots de passe (base, SMTP) sont transmis en **secrets Docker**
+  (`/run/secrets/`), jamais en variables d'environnement : voir
+  [secrets/README.md](secrets/README.md) et l'audit [SECURITE.md](docs/SECURITE.md).
+
 ## Pertinence du classement
 
 Voir [PERTINENCE.md](docs/PERTINENCE.md) : 11 requêtes jugées sur un critère
@@ -299,12 +311,14 @@ suffisantes pour l'indexation et le calcul du graphe :
 
 ```bash
 cp .env.example .env
-# Définir un mot de passe PostgreSQL propre au serveur dans .env.
+chmod 700 secrets
+openssl rand -base64 24 > secrets/db_password.txt && chmod 644 secrets/db_password.txt
+echo "DB_PASSWORD_SECRET=./secrets/db_password.txt" >> .env
 docker compose -f compose.yaml -f compose.aws.yaml up -d --build
 ```
 
 La surcharge AWS publie le frontend sur le port 80, retire l'exposition directe
-du backend et exige `POSTGRES_PASSWORD`. Le groupe de sécurité EC2 doit
+du backend et exige un secret Docker propre au serveur (`DB_PASSWORD_SECRET`). Le groupe de sécurité EC2 doit
 autoriser HTTP TCP 80 pour l'accès public  PostgreSQL et le port 8000 du
 backend n'ont pas besoin d'être ouverts sur Internet.
 

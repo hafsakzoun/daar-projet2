@@ -6,6 +6,8 @@ import useReadingActivity from "./hooks/useReadingActivity.js";
 import BookReader from "./pages/BookReader.jsx";
 import FavoritesPage from "./pages/FavoritesPage.jsx";
 import HistoryPage from "./pages/HistoryPage.jsx";
+import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
+import VerifyEmailPage from "./pages/VerifyEmailPage.jsx";
 import { navigate, useHashRoute } from "./useHashRoute.js";
 import "./App.css";
 
@@ -243,6 +245,14 @@ function App() {
         ) : (
           <SignInRequired onLogin={() => setAuthMode("login")} checking={checkingSession} />
         ))}
+
+        {route.name === "verify" && (
+          <VerifyEmailPage token={route.token} onLogin={() => setAuthMode("login")} />
+        )}
+
+        {route.name === "reset" && (
+          <ResetPasswordPage token={route.token} onLogin={() => setAuthMode("login")} />
+        )}
 
         {route.name === "book" && (
           <BookReader

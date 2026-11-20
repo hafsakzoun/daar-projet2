@@ -69,12 +69,14 @@ frontend_lint_build:
 compose_config:
   stage: test
   image: docker:27-cli
-  variables:
-    POSTGRES_PASSWORD: "verification_ci"
   script:
     # Erreur de syntaxe ou de surcharge => échec du pipeline.
     - docker compose -f compose.yaml config -q
-    - docker compose -f compose.yaml -f compose.aws.yaml config -q
+    # La surcharge AWS doit refuser de démarrer sans secret de production...
+    - "! docker compose -f compose.yaml -f compose.aws.yaml config -q 2>/dev/null"
+    # ...et l'accepter avec un fichier secret.
+    - printf 'verification_ci' > /tmp/db_password
+    - DB_PASSWORD_SECRET=/tmp/db_password docker compose -f compose.yaml -f compose.aws.yaml config -q
 
 k8s_manifests:
   stage: test
@@ -143,6 +145,8 @@ deploy_aws:
     # Fichiers Compose du dépôt (compose.ec2.yaml reste propre au serveur).
     - scp -i "$EC2_SSH_KEY" compose.yaml compose.aws.yaml compose.https.yaml "$SSH_TARGET:$DEPLOY_DIR/"
     - scp -i "$EC2_SSH_KEY" frontend/nginx.https.conf "$SSH_TARGET:$DEPLOY_DIR/frontend/"
+    - ssh -i "$EC2_SSH_KEY" "$SSH_TARGET" "mkdir -p $DEPLOY_DIR/secrets"
+    - scp -i "$EC2_SSH_KEY" secrets/README.md secrets/db_password.dev secrets/smtp_password.dev "$SSH_TARGET:$DEPLOY_DIR/secrets/"
     # Le jeton du job permet au serveur de lire le registre GitLab.
     - printf '%s' "$CI_JOB_TOKEN" | ssh -i "$EC2_SSH_KEY" "$SSH_TARGET"
         "sudo docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"

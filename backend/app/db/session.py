@@ -5,12 +5,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import sessionmaker, Session
 
+from app.core.config import read_secret
+
 
 # Paramètres transmis par Docker Compose
 DATABASE_URL = URL.create(
     drivername="postgresql+psycopg",
     username=os.environ["DB_USER"],
-    password=os.environ["DB_PASSWORD"],
+    # Secret Docker (/run/secrets/db_password) ou variable (tests, CI).
+    password=read_secret("DB_PASSWORD"),
     host=os.environ["DB_HOST"],
     port=int(os.environ["DB_PORT"]),
     database=os.environ["DB_NAME"],

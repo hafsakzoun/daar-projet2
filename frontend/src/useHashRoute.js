@@ -3,10 +3,15 @@ import { useEffect, useState } from "react";
 // Routage minimal par hash (#/favoris, #/livre/12…) :
 // aucune dépendance, et nginx n'a rien à configurer.
 function parse(hash) {
-  const path = hash.replace(/^#/, "") || "/";
+  const [path = "/", query = ""] = (hash.replace(/^#/, "") || "/").split("?");
+  const params = new URLSearchParams(query);
   const book = path.match(/^\/livre\/(\d+)$/);
 
   if (book) return { name: "book", bookId: Number(book[1]) };
+  // Liens envoyés par e-mail : le jeton reste après le « # »,
+  // il n'est donc jamais transmis au serveur ni aux journaux.
+  if (path === "/verifier") return { name: "verify", token: params.get("jeton") ?? "" };
+  if (path === "/reinitialiser") return { name: "reset", token: params.get("jeton") ?? "" };
   if (path === "/favoris") return { name: "favorites" };
   if (path === "/historique") return { name: "history" };
   return { name: "search" };

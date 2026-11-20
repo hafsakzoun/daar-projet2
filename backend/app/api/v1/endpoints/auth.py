@@ -5,16 +5,19 @@ from hashlib import sha256
 from typing import Annotated, Literal
 from urllib.parse import urlsplit
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Response
 from pwdlib import PasswordHash
 from pydantic import BaseModel, EmailStr, Field, SecretStr, StringConstraints
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, text
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.db.models import AuthSession, Book, Favorite, SearchHistory, User
+from app.db.models import AuthSession, AuthToken, Book, Favorite, SearchHistory, User
 from app.db.session import get_db
+from app.services import rate_limit
+from app.services.emails import reset_email, verification_email
+from app.services.mailer import send_mail
 
 
 router = APIRouter(prefix="/auth", tags=["Compte"])
@@ -24,8 +27,13 @@ COOKIE_NAME = "lisiere_session"
 SESSION_DURATION = timedelta(hours=24)
 COOKIE_SECURE = os.getenv("AUTH_COOKIE_SECURE", "false").lower() == "true"
 
+VERIFY_DURATION = timedelta(hours=48)
+RESET_DURATION = timedelta(hours=1)
+
 password_hasher = PasswordHash.recommended()
 dummy_hash = password_hasher.hash(secrets.token_urlsafe(32))
+
+Password = Annotated[SecretStr, Field(min_length=12, max_length=128)]
 
 
 class LoginInput(BaseModel):
@@ -45,6 +53,83 @@ class PublicUser(BaseModel):
     id: int
     first_name: str
     email: EmailStr
+
+
+class SignupResult(PublicUser):
+    # Vrai si un e-mail de confirmation a été envoyé : le compte devra être
+    # activé avant la première connexion.
+    verification_required: bool
+
+
+class EmailInput(BaseModel):
+    email: EmailStr
+
+
+class TokenInput(BaseModel):
+    token: Annotated[str, StringConstraints(strip_whitespace=True, min_length=20, max_length=200)]
+
+
+class ResetInput(TokenInput):
+    password: Password
+
+
+class Message(BaseModel):
+    detail: str
+
+
+_auth_schema_ready = False
+
+
+def ensure_auth_schema(db: Session) -> None:
+    """Ajoute colonne et table des e-mails sur une base créée avant elles
+    (ex. base restaurée sur AWS). Idempotent, exécuté une fois par processus."""
+    global _auth_schema_ready
+    if _auth_schema_ready:
+        return
+    db.execute(text(
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS "
+        "email_verified boolean NOT NULL DEFAULT true"
+    ))
+    db.commit()
+    AuthToken.__table__.create(db.get_bind(), checkfirst=True)
+    _auth_schema_ready = True
+
+
+def issue_token(db: Session, user_id: int, purpose: str, duration: timedelta) -> str:
+    """Crée un jeton à usage unique et invalide les précédents du même type."""
+    db.execute(delete(AuthToken).where(
+        AuthToken.user_id == user_id, AuthToken.purpose == purpose
+    ))
+    token = secrets.token_urlsafe(32)
+    db.add(AuthToken(
+        token_hash=hash_token(token),
+        user_id=user_id,
+        purpose=purpose,
+        expires_at=datetime.now(timezone.utc) + duration,
+    ))
+    return token
+
+
+def consume_token(db: Session, token: str, purpose: str) -> User:
+    """Valide un jeton (bon type, non expiré, jamais utilisé) et le marque utilisé."""
+    row = db.scalar(select(AuthToken).where(
+        AuthToken.token_hash == hash_token(token),
+        AuthToken.purpose == purpose,
+        AuthToken.used_at.is_(None),
+        AuthToken.expires_at > datetime.now(timezone.utc),
+    ).with_for_update())
+    if row is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Ce lien est invalide ou a expiré. Demande-en un nouveau.",
+        )
+    row.used_at = datetime.now(timezone.utc)
+    return db.get(User, row.user_id)
+
+
+def send_verification(background: BackgroundTasks, db: Session, user: User) -> None:
+    token = issue_token(db, user.id, "verify", VERIFY_DURATION)
+    background.add_task(send_mail, user.email, *verification_email(user.first_name, token))
 
 
 def check_origin(request: Request) -> None:
@@ -113,13 +198,17 @@ def open_session(
 @router.post(
     "/signup",
     status_code=201,
-    response_model=PublicUser,
+    response_model=SignupResult,
     dependencies=[Depends(check_origin)],
 )
 def signup(
     payload: SignupInput,
+    request: Request,
+    background: BackgroundTasks,
     db: DbSession,
-) -> PublicUser:
+) -> SignupResult:
+    rate_limit.check(f"signup:{rate_limit.client_ip(request)}", limit=10, window_seconds=3600)
+    ensure_auth_schema(db)
     email = str(payload.email).casefold()
     if len(email) > 254:
         raise HTTPException(status_code=422, detail="Adresse e-mail trop longue.")
@@ -130,6 +219,8 @@ def signup(
             first_name=payload.first_name,
             email=email,
             password_hash=password_hasher.hash(payload.password.get_secret_value()),
+            # Avec un serveur SMTP, l'adresse doit être confirmée.
+            email_verified=not settings.mail_enabled,
         )
         .on_conflict_do_nothing(index_elements=[User.email])
         .returning(User)
@@ -142,7 +233,13 @@ def signup(
             detail="Un compte existe déjà avec cette adresse e-mail.",
         )
 
-    result = public_user(user)
+    if settings.mail_enabled:
+        send_verification(background, db, user)
+
+    result = SignupResult(
+        **public_user(user).model_dump(),
+        verification_required=settings.mail_enabled,
+    )
     db.commit()
     return result
 
@@ -158,7 +255,13 @@ def login(
     response: Response,
     db: DbSession,
 ) -> PublicUser:
-    user = db.scalar(select(User).where(User.email == str(payload.email).casefold()))
+    email = str(payload.email).casefold()
+    # Anti force brute : par adresse e-mail et par IP.
+    rate_limit.check(f"login:{email}", limit=8, window_seconds=600)
+    rate_limit.check(f"login-ip:{rate_limit.client_ip(request)}", limit=30, window_seconds=600)
+    ensure_auth_schema(db)
+
+    user = db.scalar(select(User).where(User.email == email))
     stored_hash = user.password_hash if user else dummy_hash
     valid_password = password_hasher.verify(
         payload.password.get_secret_value(),
@@ -168,8 +271,102 @@ def login(
     if user is None or not valid_password:
         raise HTTPException(status_code=401, detail="E-mail ou mot de passe incorrect.")
 
+    if not user.email_verified:
+        # Le mot de passe est correct : on peut dire pourquoi l'accès est refusé.
+        raise HTTPException(
+            status_code=403,
+            detail="Confirme ton adresse e-mail avant de te connecter.",
+        )
+
+    # Ménage : sessions expirées de cet utilisateur.
+    db.execute(delete(AuthSession).where(
+        AuthSession.user_id == user.id,
+        AuthSession.expires_at <= datetime.now(timezone.utc),
+    ))
     open_session(db, request, response, user.id)
     return public_user(user)
+
+
+GENERIC_SENT = (
+    "Si un compte correspond à cette adresse, un e-mail vient d'être envoyé."
+)
+
+
+@router.post(
+    "/email/verify",
+    response_model=Message,
+    dependencies=[Depends(check_origin)],
+)
+def verify_email(payload: TokenInput, db: DbSession) -> Message:
+    ensure_auth_schema(db)
+    user = consume_token(db, payload.token, "verify")
+    user.email_verified = True
+    db.commit()
+    return Message(detail="Ton adresse est confirmée. Tu peux te connecter.")
+
+
+@router.post(
+    "/email/resend",
+    status_code=202,
+    response_model=Message,
+    dependencies=[Depends(check_origin)],
+)
+def resend_verification(
+    payload: EmailInput, request: Request, background: BackgroundTasks, db: DbSession
+) -> Message:
+    email = str(payload.email).casefold()
+    rate_limit.check(f"mail:{email}", limit=3, window_seconds=900)
+    rate_limit.check(f"mail-ip:{rate_limit.client_ip(request)}", limit=10, window_seconds=900)
+    ensure_auth_schema(db)
+
+    user = db.scalar(select(User).where(User.email == email))
+    # Même réponse que le compte existe ou non : pas d'énumération d'adresses.
+    if user is not None and not user.email_verified:
+        send_verification(background, db, user)
+        db.commit()
+    return Message(detail=GENERIC_SENT)
+
+
+@router.post(
+    "/password/forgot",
+    status_code=202,
+    response_model=Message,
+    dependencies=[Depends(check_origin)],
+)
+def forgot_password(
+    payload: EmailInput, request: Request, background: BackgroundTasks, db: DbSession
+) -> Message:
+    email = str(payload.email).casefold()
+    rate_limit.check(f"mail:{email}", limit=3, window_seconds=900)
+    rate_limit.check(f"mail-ip:{rate_limit.client_ip(request)}", limit=10, window_seconds=900)
+    ensure_auth_schema(db)
+
+    user = db.scalar(select(User).where(User.email == email))
+    if user is not None:
+        token = issue_token(db, user.id, "reset", RESET_DURATION)
+        db.commit()
+        # Envoi après la réponse : même durée que l'adresse existe ou non.
+        background.add_task(send_mail, user.email, *reset_email(user.first_name, token))
+    return Message(detail=GENERIC_SENT)
+
+
+@router.post(
+    "/password/reset",
+    response_model=Message,
+    dependencies=[Depends(check_origin)],
+)
+def reset_password(payload: ResetInput, request: Request, db: DbSession) -> Message:
+    rate_limit.check(f"reset-ip:{rate_limit.client_ip(request)}", limit=10, window_seconds=900)
+    ensure_auth_schema(db)
+
+    user = consume_token(db, payload.token, "reset")
+    user.password_hash = password_hasher.hash(payload.password.get_secret_value())
+    # Recevoir le lien prouve que l'adresse appartient bien à l'utilisateur.
+    user.email_verified = True
+    # Déconnecte toutes les sessions ouvertes avec l'ancien mot de passe.
+    db.execute(delete(AuthSession).where(AuthSession.user_id == user.id))
+    db.commit()
+    return Message(detail="Ton mot de passe a été changé. Tu peux te connecter.")
 
 
 def current_user(request: Request, db: DbSession) -> User:

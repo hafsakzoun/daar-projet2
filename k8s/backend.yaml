@@ -43,6 +43,14 @@ spec:
           env:
             - name: PRELOAD_VOCABULARY
               value: "1"
+            # E-mails : Secret « lisiere-smtp » facultatif, créé hors du dépôt
+            # (voir docs/KUBERNETES.md). Absent = e-mails désactivés.
+            - name: SMTP_HOST
+              valueFrom: {secretKeyRef: {name: lisiere-smtp, key: SMTP_HOST, optional: true}}
+            - name: SMTP_USER
+              valueFrom: {secretKeyRef: {name: lisiere-smtp, key: SMTP_USER, optional: true}}
+            - name: SMTP_PASSWORD
+              valueFrom: {secretKeyRef: {name: lisiere-smtp, key: SMTP_PASSWORD, optional: true}}
           ports:
             - containerPort: 8000
           readinessProbe:
