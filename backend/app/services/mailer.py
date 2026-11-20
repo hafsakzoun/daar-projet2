@@ -23,7 +23,7 @@ def send_mail(to: str, subject: str, text: str, html: str) -> bool:
     la requête de l'utilisateur.
     """
     if not settings.mail_enabled:
-        print(f"[e-mail non envoyé : SMTP non configuré] À : {to} — {subject}\n{text}", flush=True)
+        print(f"[e-mail non envoyé : SMTP non configuré] À : {to} | {subject}\n{text}", flush=True)
         return False
 
     message = EmailMessage()

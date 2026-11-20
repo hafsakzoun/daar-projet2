@@ -2,7 +2,7 @@ import { useState } from "react";
 import { postAuth } from "../api/auth.js";
 import PasswordInput from "../components/PasswordInput.jsx";
 
-export default function ResetPasswordPage({ token, onLogin }) {
+export default function ResetPasswordPage({ token, onLogin, loggedIn }) {
   const [notice, setNotice] = useState(null);
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState(false);
@@ -21,7 +21,10 @@ export default function ResetPasswordPage({ token, onLogin }) {
     const result = await postAuth("password/reset", { token, password });
     setPending(false);
     setNotice({ type: result.ok ? "success" : "error", text: result.message });
-    if (result.ok) setDone(true);
+    if (result.ok) {
+      setDone(true);
+      window.history.replaceState(null, "", "#/");
+    }
   }
 
   return (
@@ -47,11 +50,15 @@ export default function ResetPasswordPage({ token, onLogin }) {
         </p>
       )}
 
-      {done && (
+      {done && (loggedIn ? (
+        <a className="btn btn--primary" href="#/">
+          Retour à l’accueil
+        </a>
+      ) : (
         <button type="button" className="btn btn--primary" onClick={onLogin}>
           Se connecter
         </button>
-      )}
+      ))}
     </section>
   );
 }

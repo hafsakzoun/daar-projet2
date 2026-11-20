@@ -33,10 +33,10 @@ def plot(mode, rows):
         '<rect width="100%" height="100%" fill="white"/>',
         f'<text x="450" y="38" text-anchor="middle" '
         f'font-family="Arial" font-size="24" font-weight="bold">'
-        f'{title} — 1 700 livres</text>',
+        f'{title}, 1 700 livres</text>',
         '<text x="450" y="63" text-anchor="middle" '
         'font-family="Arial" font-size="14" fill="#555">'
-        'Temps moyen ± écart-type — 20 répétitions</text>',
+        'Temps moyen ± écart-type, 20 répétitions</text>',
     ]
 
     for tick in range(5):

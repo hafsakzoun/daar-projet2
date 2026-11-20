@@ -24,7 +24,7 @@ def _layout(title: str, intro: str, button: str, link: str, outro: str) -> str:
 
 def verification_email(first_name: str, token: str) -> tuple[str, str, str]:
     link = f"{settings.app_url}/#/verifier?jeton={token}"
-    subject = "Confirme ton adresse e-mail — Lisière"
+    subject = "Confirme ton adresse e-mail | Lisière"
     intro = f"Bonjour {first_name}, merci de t'être inscrit·e. Confirme ton adresse pour activer ton compte."
     outro = "Ce lien est valable 48 heures. Si tu n'as pas créé de compte, ignore simplement cet e-mail."
     text = f"{intro}\n\n{link}\n\n{outro}\n"
@@ -33,7 +33,7 @@ def verification_email(first_name: str, token: str) -> tuple[str, str, str]:
 
 def reset_email(first_name: str, token: str) -> tuple[str, str, str]:
     link = f"{settings.app_url}/#/reinitialiser?jeton={token}"
-    subject = "Réinitialise ton mot de passe — Lisière"
+    subject = "Réinitialise ton mot de passe | Lisière"
     intro = f"Bonjour {first_name}, tu as demandé à changer ton mot de passe. Choisis-en un nouveau avec le lien ci-dessous."
     outro = "Ce lien est valable 1 heure et ne peut servir qu'une fois. Si tu n'es pas à l'origine de cette demande, ignore cet e-mail : ton mot de passe actuel reste valable."
     text = f"{intro}\n\n{link}\n\n{outro}\n"
@@ -43,7 +43,7 @@ def reset_email(first_name: str, token: str) -> tuple[str, str, str]:
 def password_changed_email(first_name: str) -> tuple[str, str, str]:
     """Alerte envoyée après chaque changement de mot de passe."""
     link = f"{settings.app_url}/#/"
-    subject = "Ton mot de passe a été modifié — Lisière"
+    subject = "Ton mot de passe a été modifié | Lisière"
     intro = f"Bonjour {first_name}, le mot de passe de ton compte Lisière vient d'être modifié. Toutes les autres sessions ont été déconnectées."
     outro = "Si tu n'es pas à l'origine de ce changement, utilise immédiatement « Mot de passe oublié » sur le site pour reprendre la main sur ton compte."
     text = f"{intro}\n\n{outro}\n\n{link}\n"

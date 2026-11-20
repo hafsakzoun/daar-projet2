@@ -1,4 +1,4 @@
-# Évaluation des performances — V2
+# Évaluation des performances (V2)
 
 Mesures réalisées le 17 novembre 2026 sur l'index V2 (racines + mots vides
 filtrés). Données brutes : `docs/benchmarks_v2/*.csv`. Graphiques :
@@ -76,7 +76,7 @@ vocabulaire en mémoire ; « PostgreSQL » = opérateur `~*` de la base.
 | alic.* | 391 | 1 237 ms | **28 ± 3 ms** | 111 ± 2 ms |
 | (love\|heart) | 1 651 | 1 070 ms | **25 ± 2 ms** | 179 ± 10 ms |
 | k.ng | 1 470 | 1 123 ms | **32 ± 4 ms** | 108 ± 1 ms |
-| .*land | 1 683 | — | 563 ± 74 ms | **214 ± 9 ms** |
+| .*land | 1 683 | non mesuré | 563 ± 74 ms | **214 ± 9 ms** |
 
 **Lecture.** Les deux méthodes renvoient exactement les mêmes livres. Trois
 optimisations expliquent le gain d'un facteur ~40 sur les trois premiers motifs :
@@ -157,7 +157,7 @@ de connexions PostgreSQL.
 | Entrées livre-terme | 15 546 923 | 10 753 306 |
 | Mot-clé « love » | 11,2 ms | 6,1 ms |
 | Regex PostgreSQL « love\|heart » | 328 ms | 179 ms |
-| Regex par automate « love\|heart » | — | 25 ms |
+| Regex par automate « love\|heart » | n'existait pas | 25 ms |
 
 Le filtrage des mots vides et la racinisation réduisent l'index de 31 %
 et divisent environ par deux le temps des recherches.

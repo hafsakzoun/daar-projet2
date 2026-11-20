@@ -42,6 +42,14 @@ function App() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [accountError, setAccountError] = useState("");
   const route = useHashRoute();
+
+  // Un lien d'e-mail ouvert dans l'onglet ferme la fenêtre de connexion,
+  // qui masquerait sinon la page de confirmation ou de réinitialisation.
+  const [routeSeen, setRouteSeen] = useState(route);
+  if (routeSeen !== route) {
+    setRouteSeen(route);
+    setAuthMode(null);
+  }
   const [request, setRequest] = useState({
     query: "",
     mode: "keyword",
@@ -84,6 +92,8 @@ function App() {
     setUser(profile);
     setAuthMode(null);
     setAccountError("");
+    // Après une confirmation ou une réinitialisation, on quitte la page du lien.
+    if (route.name === "verify" || route.name === "reset") navigate("/");
   }
 
   async function handleLogout() {
@@ -262,11 +272,11 @@ function App() {
         ))}
 
         {route.name === "verify" && (
-          <VerifyEmailPage token={route.token} onLogin={() => setAuthMode("login")} />
+          <VerifyEmailPage token={route.token} loggedIn={Boolean(user)} onLogin={() => setAuthMode("login")} />
         )}
 
         {route.name === "reset" && (
-          <ResetPasswordPage token={route.token} onLogin={() => setAuthMode("login")} />
+          <ResetPasswordPage token={route.token} loggedIn={Boolean(user)} onLogin={() => setAuthMode("login")} />
         )}
 
         {route.name === "book" && (

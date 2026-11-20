@@ -1648,3 +1648,15 @@ a.book-cover:focus-visible { transform: translateY(-3px); }
   font-size: 1.2rem;
   font-weight: 600;
 }
+
+/* Barre du haut : le message d'accueil disparaît avant que les liens
+   ne passent sur une deuxième ligne. */
+@media (max-width: 1100px) {
+  .account-welcome {
+    display: none;
+  }
+
+  .account-actions {
+    padding-left: 10px;
+  }
+}

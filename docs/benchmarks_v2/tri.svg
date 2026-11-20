@@ -1,7 +1,7 @@
 <svg xmlns='http://www.w3.org/2000/svg' width='760' height='440' viewBox='0 0 760 440'>
 <rect width='100%' height='100%' fill='#ffffff'/>
 <text x='76' y='32' font-family='Helvetica, Arial, sans-serif' font-size='18' font-weight='600' fill='#0b0b0b'>Coût du classement : occurrences vs PageRank</text>
-<text x='76' y='54' font-family='Helvetica, Arial, sans-serif' font-size='12.5' fill='#52514e'>Recherche par mot-clé, 1 700 livres — moyenne ± écart-type</text>
+<text x='76' y='54' font-family='Helvetica, Arial, sans-serif' font-size='12.5' fill='#52514e'>Recherche par mot-clé, 1 700 livres, moyenne ± écart-type</text>
 <line x1='76' x2='610' y1='368.0' y2='368.0' stroke='#e4e3df' stroke-width='1'/>
 <text x='68' y='372.0' text-anchor='end' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>0</text>
 <line x1='76' x2='610' y1='295.5' y2='295.5' stroke='#e4e3df' stroke-width='1'/>
@@ -13,29 +13,29 @@
 <line x1='76' x2='610' y1='78.0' y2='78.0' stroke='#e4e3df' stroke-width='1'/>
 <text x='68' y='82.0' text-anchor='end' font-family='Helvetica, Arial, sans-serif' font-size='11' fill='#52514e'>20</text>
 <text transform='translate(18 223.0) rotate(-90)' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11.5' fill='#52514e'>Temps de réponse (ms)</text>
-<path d='M124.66666666666669,368 V336.475 Q124.66666666666669,332.475 128.66666666666669,332.475 H166.66666666666669 Q170.66666666666669,332.475 170.66666666666669,336.475 V368 Z' fill='#2a78d6'><title>Fréquence normalisée — alice : 2.5 ms ± 0.1</title></path>
+<path d='M124.66666666666669,368 V336.475 Q124.66666666666669,332.475 128.66666666666669,332.475 H166.66666666666669 Q170.66666666666669,332.475 170.66666666666669,336.475 V368 Z' fill='#2a78d6'><title>Fréquence normalisée, alice : 2.5 ms ± 0.1</title></path>
 <line x1='147.66666666666669' x2='147.66666666666669' y1='334.65' y2='330.3' stroke='#0b0b0b' stroke-width='1.2'/>
 <line x1='143.66666666666669' x2='151.66666666666669' y1='330.3' y2='330.3' stroke='#0b0b0b' stroke-width='1.2'/>
 <text x='147.66666666666669' y='324.3' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='10.5' fill='#0b0b0b'>2.45</text>
-<path d='M172.66666666666669,368 V331.835 Q172.66666666666669,327.835 176.66666666666669,327.835 H214.66666666666669 Q218.66666666666669,327.835 218.66666666666669,331.835 V368 Z' fill='#eb6834'><title>PageRank — alice : 2.8 ms ± 0.1</title></path>
+<path d='M172.66666666666669,368 V331.835 Q172.66666666666669,327.835 176.66666666666669,327.835 H214.66666666666669 Q218.66666666666669,327.835 218.66666666666669,331.835 V368 Z' fill='#eb6834'><title>PageRank, alice : 2.8 ms ± 0.1</title></path>
 <line x1='195.66666666666669' x2='195.66666666666669' y1='329.43' y2='326.24' stroke='#0b0b0b' stroke-width='1.2'/>
 <line x1='191.66666666666669' x2='199.66666666666669' y1='326.24' y2='326.24' stroke='#0b0b0b' stroke-width='1.2'/>
 <text x='195.66666666666669' y='320.24' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='10.5' fill='#0b0b0b'>2.77</text>
 <text x='171.66666666666669' y='386' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11.5' fill='#0b0b0b'>alice</text>
-<path d='M296.0,368 V283.985 Q296.0,279.985 300.0,279.985 H338.0 Q342.0,279.985 342.0,283.985 V368 Z' fill='#2a78d6'><title>Fréquence normalisée — love : 6.1 ms ± 1.1</title></path>
+<path d='M296.0,368 V283.985 Q296.0,279.985 300.0,279.985 H338.0 Q342.0,279.985 342.0,283.985 V368 Z' fill='#2a78d6'><title>Fréquence normalisée, love : 6.1 ms ± 1.1</title></path>
 <line x1='319.0' x2='319.0' y1='296.37' y2='263.6' stroke='#0b0b0b' stroke-width='1.2'/>
 <line x1='315.0' x2='323.0' y1='263.6' y2='263.6' stroke='#0b0b0b' stroke-width='1.2'/>
 <text x='319.0' y='257.6' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='10.5' fill='#0b0b0b'>6.07</text>
-<path d='M344.0,368 V224.1 Q344.0,220.1 348.0,220.1 H386.0 Q390.0,220.1 390.0,224.1 V368 Z' fill='#eb6834'><title>PageRank — love : 10.2 ms ± 3.2</title></path>
+<path d='M344.0,368 V224.1 Q344.0,220.1 348.0,220.1 H386.0 Q390.0,220.1 390.0,224.1 V368 Z' fill='#eb6834'><title>PageRank, love : 10.2 ms ± 3.2</title></path>
 <line x1='367.0' x2='367.0' y1='266.21000000000004' y2='173.99' stroke='#0b0b0b' stroke-width='1.2'/>
 <line x1='363.0' x2='371.0' y1='173.99' y2='173.99' stroke='#0b0b0b' stroke-width='1.2'/>
 <text x='367.0' y='167.99' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='10.5' fill='#0b0b0b'>10</text>
 <text x='343.0' y='386' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='11.5' fill='#0b0b0b'>love</text>
-<path d='M467.33333333333337,368 V275.14 Q467.33333333333337,271.14 471.33333333333337,271.14 H509.33333333333337 Q513.3333333333334,271.14 513.3333333333334,275.14 V368 Z' fill='#2a78d6'><title>Fréquence normalisée — king : 6.7 ms ± 0.8</title></path>
+<path d='M467.33333333333337,368 V275.14 Q467.33333333333337,271.14 471.33333333333337,271.14 H509.33333333333337 Q513.3333333333334,271.14 513.3333333333334,275.14 V368 Z' fill='#2a78d6'><title>Fréquence normalisée, king : 6.7 ms ± 0.8</title></path>
 <line x1='490.33333333333337' x2='490.33333333333337' y1='283.32' y2='258.96000000000004' stroke='#0b0b0b' stroke-width='1.2'/>
 <line x1='486.33333333333337' x2='494.33333333333337' y1='258.96000000000004' y2='258.96000000000004' stroke='#0b0b0b' stroke-width='1.2'/>
 <text x='490.33333333333337' y='252.96000000000004' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='10.5' fill='#0b0b0b'>6.68</text>
-<path d='M515.3333333333334,368 V251.79500000000002 Q515.3333333333334,247.79500000000002 519.3333333333334,247.79500000000002 H557.3333333333334 Q561.3333333333334,247.79500000000002 561.3333333333334,251.79500000000002 V368 Z' fill='#eb6834'><title>PageRank — king : 8.3 ms ± 1.8</title></path>
+<path d='M515.3333333333334,368 V251.79500000000002 Q515.3333333333334,247.79500000000002 519.3333333333334,247.79500000000002 H557.3333333333334 Q561.3333333333334,247.79500000000002 561.3333333333334,251.79500000000002 V368 Z' fill='#eb6834'><title>PageRank, king : 8.3 ms ± 1.8</title></path>
 <line x1='538.3333333333334' x2='538.3333333333334' y1='273.315' y2='222.27500000000003' stroke='#0b0b0b' stroke-width='1.2'/>
 <line x1='534.3333333333334' x2='542.3333333333334' y1='222.27500000000003' y2='222.27500000000003' stroke='#0b0b0b' stroke-width='1.2'/>
 <text x='538.3333333333334' y='216.27500000000003' text-anchor='middle' font-family='Helvetica, Arial, sans-serif' font-size='10.5' fill='#0b0b0b'>8.29</text>

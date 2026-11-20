@@ -1,4 +1,4 @@
-# DAAR 2 — Validation technique P1
+# DAAR 2 : validation technique P1
 
 Date : 9 novembre 2026
 
@@ -63,7 +63,7 @@ Limites :
 - Les doublons presque identiques ne sont pas détectés par SHA-256.
 - La méthode de nettoyage reste à documenter.
 
-## 4. Recherche simple — DAAR-011
+## 4. Recherche simple (DAAR-011)
 
 Requête : alice
 
@@ -84,7 +84,7 @@ Autres vérifications :
 - Les deux pages indiquent le même total de 296.
 - Requête sans correspondance : HTTP 200, total=0, results=[].
 
-## 5. Recherche regex — DAAR-012
+## 5. Recherche regex (DAAR-012)
 
 Expression : alice|rabbit
 
@@ -101,7 +101,7 @@ Les scores correspondent aux sommes des fréquences SQL.
 Expression invalide "[" :
 HTTP 400, message "Expression régulière invalide."
 
-## 6. Performances — DAAR-020
+## 6. Performances (DAAR-020)
 
 Mesures effectuées via HTTP en local.
 
@@ -186,7 +186,7 @@ Tests backend exécutés avec la base isolée `daar_test` :
 Ces contrôles ne prouvent pas encore la reproductibilité complète
 sur une machine neuve ni l'absence d'index partiellement corrompu.
 
-## Validation Docker sur volumes vierges — 16 novembre 2026
+## Validation Docker sur volumes vierges (16 novembre 2026)
 
 Installation indépendante avec le projet Compose `daar-validation`.
 
@@ -207,7 +207,7 @@ Résultats :
 Conclusion : installation et indexation reproductibles sur volumes vierges.
 La démonstration depuis plusieurs appareils reste à confirmer.
 
-## Validation Docker complete depuis zero — 16 novembre 2026
+## Validation Docker complete depuis zero (16 novembre 2026)
 
 Une seconde installation Docker independante a ete creee
 avec un clone Git et deux volumes neufs :

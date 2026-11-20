@@ -1,4 +1,4 @@
-# Bilan des ressources — répartition du travail
+# Bilan des ressources : répartition du travail
 
 Établi à partir de l'historique Git (toutes branches, hors commits de fusion),
 du 2 au 18 novembre 2026. L'énoncé demande, dans la partie introductive de la
@@ -17,7 +17,7 @@ principale du projet » : la dernière colonne est à compléter par l'équipe.
 
 | Tâche | Oum | Hafsa | Contenu principal | Jours-homme |
 |---|---:|---:|---|---:|
-| Initialisation du projet (FastAPI, React, Docker) | — | ✔ | squelette du dépôt, première API, premier frontend (Hafsa) | |
+| Initialisation du projet (FastAPI, React, Docker) | 0 | ✔ | squelette du dépôt, première API, premier frontend (Hafsa) | |
 | Corpus Gutenberg (1 700 livres, téléchargement, vérification SHA-256) | 5 | 0 | `install_corpus`, `auto_install`, archive publiée (Oum) | |
 | Index inversé (normalisation, racines, mots vides) | 9 | 0 | index V1 puis V2 sur PostgreSQL (Oum) | |
 | Recherche par mot-clé et API | 12 | 4 | structure de l'API (Hafsa) ; recherche V2, pagination, lecture du texte (Oum) | |

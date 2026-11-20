@@ -132,7 +132,7 @@ def bar_chart(path, title, subtitle, ylabel, groups, series):
             parts.append(
                 f"<path d='M{x},{BOTTOM} V{top + radius} Q{x},{top} {x + radius},{top} "
                 f"H{x + bar - radius} Q{x + bar},{top} {x + bar},{top + radius} V{BOTTOM} Z' fill='{SERIES[i]}'>"
-                f"<title>{escape(name)} — {escape(group)} : {m:.1f} ms ± {s:.1f}</title></path>"
+                f"<title>{escape(name)}, {escape(group)} : {m:.1f} ms ± {s:.1f}</title></path>"
             )
             if s > 0:
                 cx = x + bar / 2
@@ -160,7 +160,7 @@ def main(folder):
     line_chart(
         folder / "volume.svg",
         "Recherche par mot-clé selon la taille du corpus",
-        "Index V2 PostgreSQL — moyenne ± écart-type",
+        "Index V2 PostgreSQL, moyenne ± écart-type",
         "Nombre de livres indexés", "Temps de réponse (ms)", xs,
         {w: [mean_std(r) for x in xs for r in rows if r["requete"] == w and int(r["livres"]) == x] for w in words},
     )
@@ -171,7 +171,7 @@ def main(folder):
     line_chart(
         folder / "automate.svg",
         "Automate RegEx selon la taille du vocabulaire",
-        "Parcours des racines de l'index — moyenne ± écart-type",
+        "Parcours des racines de l'index, moyenne ± écart-type",
         "Termes parcourus (milliers)", "Temps de parcours (ms)", xs,
         {p: [mean_std(r) for x in xs for r in rows if r["motif"] == p and int(r["termes"]) == x] for p in patterns},
         xformat=lambda x: f"{x / 1000:.0f}",
@@ -183,7 +183,7 @@ def main(folder):
     bar_chart(
         folder / "regex_comparaison.svg",
         "Recherche RegEx : automate vs PostgreSQL",
-        "1 700 livres — temps total de la requête, moyenne ± écart-type",
+        "1 700 livres, temps total de la requête, moyenne ± écart-type",
         "Temps de réponse (ms)", groups,
         {
             "Automate (Python)": [mean_std(r) for g in groups for r in regex if r["requete"] == g and r["variante"] == "automate"],
@@ -195,7 +195,7 @@ def main(folder):
     bar_chart(
         folder / "tri.svg",
         "Coût du classement : occurrences vs PageRank",
-        "Recherche par mot-clé, 1 700 livres — moyenne ± écart-type",
+        "Recherche par mot-clé, 1 700 livres, moyenne ± écart-type",
         "Temps de réponse (ms)", groups,
         {
             "Fréquence normalisée": [mean_std(r) for g in groups for r in tri if r["requete"] == g and r["variante"] == "occurrences"],
@@ -208,7 +208,7 @@ def main(folder):
     line_chart(
         folder / "charge_latence.svg",
         "Test de charge HTTP : latence",
-        "20 requêtes /api/v1/search par client — moyenne ± écart-type",
+        "20 requêtes /api/v1/search par client, moyenne ± écart-type",
         "Clients simultanés", "Latence (ms)", xs,
         {"Latence moyenne": [mean_std(r) for r in rows]},
     )

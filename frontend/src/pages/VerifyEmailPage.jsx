@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { postAuth } from "../api/auth.js";
 
-export default function VerifyEmailPage({ token, onLogin }) {
+export default function VerifyEmailPage({ token, onLogin, loggedIn }) {
   const [state, setState] = useState({ status: "pending", message: "" });
 
   useEffect(() => {
@@ -9,6 +9,8 @@ export default function VerifyEmailPage({ token, onLogin }) {
     postAuth("email/verify", { token }).then((result) => {
       if (!cancelled) {
         setState({ status: result.ok ? "done" : "error", message: result.message });
+        // Le jeton ne sert plus : on le retire de l'adresse et de l'historique.
+        if (result.ok) window.history.replaceState(null, "", "#/");
       }
     });
     return () => {
@@ -25,11 +27,15 @@ export default function VerifyEmailPage({ token, onLogin }) {
         </p>
       </header>
 
-      {state.status === "done" && (
+      {state.status === "done" && (loggedIn ? (
+        <a className="btn btn--primary" href="#/">
+          Retour à l’accueil
+        </a>
+      ) : (
         <button type="button" className="btn btn--primary" onClick={onLogin}>
           Se connecter
         </button>
-      )}
+      ))}
       {state.status === "error" && (
         <a className="btn" href="#/">
           Retour à l’accueil

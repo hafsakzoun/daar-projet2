@@ -1,4 +1,4 @@
-# Évaluation des performances — P1
+# Évaluation des performances (P1)
 
 ## Objectif
 

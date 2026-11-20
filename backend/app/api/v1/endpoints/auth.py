@@ -304,6 +304,18 @@ GENERIC_SENT = (
 )
 def verify_email(payload: TokenInput, db: DbSession) -> Message:
     ensure_auth_schema(db)
+
+    # Lien recliqué (ou page rechargée) après une confirmation réussie.
+    used = db.scalar(select(AuthToken).where(
+        AuthToken.token_hash == hash_token(payload.token),
+        AuthToken.purpose == "verify",
+        AuthToken.used_at.is_not(None),
+    ))
+    if used is not None:
+        owner = db.get(User, used.user_id)
+        if owner is not None and owner.email_verified:
+            return Message(detail="Ton adresse est déjà confirmée. Tu peux te connecter.")
+
     user = consume_token(db, payload.token, "verify")
     user.email_verified = True
     db.commit()

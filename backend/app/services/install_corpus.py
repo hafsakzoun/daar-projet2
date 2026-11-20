@@ -29,10 +29,14 @@ def file_sha256(path):
 def clean_title(title: str) -> str:
     """Retire les codes de catalogue MARC laisses dans les titres Gutenberg.
 
-    « Peter Pan : $b [Peter and Wendy] » -> « Peter Pan : [Peter and Wendy] ».
+    « Peter Pan : $b [Peter and Wendy] » -> « Peter Pan : [Peter and Wendy] »,
+    « Democracy in America \u2014 Volume 1 » -> « Democracy in America, Volume 1 ».
     Les espaces multiples sont aussi reduits.
     """
     title = re.sub(r"\s*\$[a-z]\s*", " ", title)
+    # Tirets longs (U+2014) du catalogue remplacés par une virgule :
+    # « Democracy in America, Volume 1 ».
+    title = re.sub(r"\s*\u2014\s*", ", ", title)
     return re.sub(r"\s+", " ", title).strip()
 
 

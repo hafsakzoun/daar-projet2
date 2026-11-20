@@ -1,6 +1,6 @@
-# DAAR — Backlog du projet de recherche de livres
+# DAAR : Backlog du projet de recherche de livres
 
-## État actuel — novembre 2026
+## État actuel : novembre 2026
 
 Le projet utilise désormais **PostgreSQL**, et non SQLite.
 
@@ -35,19 +35,19 @@ Les objectifs de 1 664 livres et 10 000 mots minimum par livre sont repris du pl
 Les résultats complets sont disponibles dans
 [docs/VALIDATION_P1.md](docs/VALIDATION_P1.md).
 
-- **DAAR-005 — En cours** : installation et vérification du corpus
+- **DAAR-005 : En cours** : installation et vérification du corpus
   opérationnelles ; téléchargement HTTP partiel non reprenable.
-- **DAAR-006 — En cours** : 1 700 livres cohérents entre manifeste,
+- **DAAR-006 : En cours** : 1 700 livres cohérents entre manifeste,
   PostgreSQL et fichiers ; 0 empreinte incorrecte, 0 doublon exact.
   Méthode de nettoyage restant à documenter.
-- **DAAR-011 — En cours de finalisation** : recherche simple,
+- **DAAR-011 : En cours de finalisation** : recherche simple,
   pagination, résultats vides et fréquences SQL vérifiés.
-- **DAAR-012 — En cours de finalisation** : regex, erreurs HTTP 400
+- **DAAR-012 : En cours de finalisation** : regex, erreurs HTTP 400
   et scores SQL vérifiés.
-- **DAAR-020 — En cours** : premières mesures de performances réalisées.
+- **DAAR-020 : En cours** : premières mesures de performances réalisées.
   Moyennes : 29,00 ms pour la recherche simple et 314,23 ms
   pour la recherche regex.
-- **DAAR-022 — En cours** : trace technique produite,
+- **DAAR-022 : En cours** : trace technique produite,
   rapport final restant à rédiger.
 
 ---
@@ -75,12 +75,12 @@ Les attributions sont proposées et peuvent être adaptées à votre disponibili
 
 | Jalon | Résultat attendu |
 |---|---|
-| M0 — Socle | Dépôt partagé, stockage Docker, conventions et contrat API |
-| M1 — Première chaîne | 20 livres conformes importés dans SQLite et affichés dans React |
-| M2 — Recherche | Recherche simple et regex intégrées et vérifiées |
-| M3 — Graphe | Jaccard, PageRank, classement et recommandations vérifiés |
-| M4 — Corpus complet | Au moins 1 664 livres conformes, application utilisable |
-| M5 — Livraison | Évaluation, rapport, README et démonstration reproductible |
+| M0 : Socle | Dépôt partagé, stockage Docker, conventions et contrat API |
+| M1 : Première chaîne | 20 livres conformes importés dans SQLite et affichés dans React |
+| M2 : Recherche | Recherche simple et regex intégrées et vérifiées |
+| M3 : Graphe | Jaccard, PageRank, classement et recommandations vérifiés |
+| M4 : Corpus complet | Au moins 1 664 livres conformes, application utilisable |
+| M5 : Livraison | Évaluation, rapport, README et démonstration reproductible |
 
 M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’interface avec des données simulées pendant la préparation du corpus.
 
@@ -114,7 +114,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 
 ## Tickets détaillés
 
-### DAAR-001 — Partager le dépôt GitHub
+### DAAR-001 : Partager le dépôt GitHub
 
 **Epic :** Socle · **Responsable :** P1 · **Priorité :** P0 · **Estimation :** 2 points  
 **Statut :** À faire · **Dépendances :** Aucune · **Jalon :** M0
@@ -132,7 +132,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] Aucun .venv, node_modules ou secret n’est suivi.
 - [ ] Le dépôt contient les fichiers nécessaires à la construction Docker.
 
-### DAAR-002 — Préparer le stockage persistant
+### DAAR-002 : Préparer le stockage persistant
 
 **Epic :** Socle · **Responsable :** P1 · **Priorité :** P0 · **Estimation :** 2 points  
 **Statut :** À faire · **Dépendances :** 001 · **Jalon :** M0
@@ -150,7 +150,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] Les données restent présentes après docker compose down puis redémarrage.
 - [ ] Les chemins ne dépendent pas d’un répertoire personnel du Mac.
 
-### DAAR-003 — Fixer le contrat API et les règles communes
+### DAAR-003 : Fixer le contrat API et les règles communes
 
 **Epic :** Socle · **Responsable :** P2 · **Priorité :** P0 · **Estimation :** 3 points  
 **Statut :** À faire · **Dépendances :** 001 · **Jalon :** M0
@@ -168,7 +168,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] Recherche vide, regex invalide, livre inconnu et tri non autorisé ont un comportement défini.
 - [ ] Les règles de tokenisation et de classement sont écrites.
 
-### DAAR-004 — Sélectionner les sources et 20 livres pilotes
+### DAAR-004 : Sélectionner les sources et 20 livres pilotes
 
 **Epic :** Corpus · **Responsable :** P1 · **Priorité :** P0 · **Estimation :** 2 points  
 **Statut :** À faire · **Dépendances :** 003 · **Jalon :** M1
@@ -185,7 +185,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] 20 livres acceptables peuvent être obtenus sans créer de doublons.
 - [ ] La source et la méthode de sélection sont documentées.
 
-### DAAR-005 — Développer un téléchargement reprenable
+### DAAR-005 : Développer un téléchargement reprenable
 
 **Epic :** Corpus · **Responsable :** P1 · **Priorité :** P1 · **Estimation :** 5 points  
 **Statut :** À faire · **Dépendances :** 002, 004 · **Jalon :** M1
@@ -203,7 +203,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] Une interruption permet de reprendre.
 - [ ] Les échecs sont identifiables sans bloquer tout le lot.
 
-### DAAR-006 — Nettoyer, contrôler et produire le manifeste
+### DAAR-006 : Nettoyer, contrôler et produire le manifeste
 
 **Epic :** Corpus · **Responsable :** P1 · **Priorité :** P1 · **Estimation :** 5 points  
 **Statut :** À faire · **Dépendances :** 005 · **Jalon :** M1
@@ -222,7 +222,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] Chaque entrée contient id, title, author, language, source_url, chemins, word_count et empreinte.
 - [ ] Le même lot relancé donne un résultat stable ; quelques nettoyages sont vérifiés manuellement.
 
-### DAAR-007 — Importer le catalogue dans SQLite
+### DAAR-007 : Importer le catalogue dans SQLite
 
 **Epic :** Corpus · **Responsable :** P1 · **Priorité :** P1 · **Estimation :** 3 points  
 **Statut :** À faire · **Dépendances :** 006 · **Jalon :** M1
@@ -240,7 +240,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] Deux imports successifs ne créent pas de doublons.
 - [ ] La base est reconstruisible à partir des fichiers et du manifeste.
 
-### DAAR-008 — Exposer le catalogue FastAPI
+### DAAR-008 : Exposer le catalogue FastAPI
 
 **Epic :** API · **Responsable :** P1 · **Priorité :** P1 · **Estimation :** 3 points  
 **Statut :** À faire · **Dépendances :** 003, 007 · **Jalon :** M1
@@ -258,7 +258,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] Les paramètres invalides et livres absents produisent les erreurs convenues.
 - [ ] Les routes sont utilisables dans /docs et depuis React.
 
-### DAAR-009 — Construire le catalogue et les états d’affichage
+### DAAR-009 : Construire le catalogue et les états d’affichage
 
 **Epic :** Interface · **Responsable :** P2 · **Priorité :** P1 · **Estimation :** 5 points  
 **Statut :** À faire · **Dépendances :** 003 · **Jalon :** M1
@@ -276,7 +276,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] Une API inaccessible affiche un message compréhensible.
 - [ ] Les boutons et formulaires sont utilisables au clavier.
 
-### DAAR-010 — Construire l’index inversé
+### DAAR-010 : Construire l’index inversé
 
 **Epic :** Recherche · **Responsable :** P1 · **Priorité :** P1 · **Estimation :** 5 points  
 **Statut :** À faire · **Dépendances :** 006, 003 · **Jalon :** M2
@@ -294,7 +294,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] La normalisation est identique à l’indexation et à la recherche.
 - [ ] L’index peut être rechargé et son absence ou obsolescence est signalée.
 
-### DAAR-011 — Implémenter la recherche simple et son classement
+### DAAR-011 : Implémenter la recherche simple et son classement
 
 **Epic :** Recherche · **Responsable :** P1 · **Priorité :** P1 · **Estimation :** 3 points  
 **Statut :** À faire · **Dépendances :** 008, 010 · **Jalon :** M2
@@ -312,7 +312,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] Une requête sans résultat renvoie total=0 et results=[].
 - [ ] Le classement et la pagination sont déterministes.
 
-### DAAR-012 — Implémenter la recherche regex
+### DAAR-012 : Implémenter la recherche regex
 
 **Epic :** Recherche · **Responsable :** P1 · **Priorité :** P1 · **Estimation :** 5 points  
 **Statut :** À faire · **Dépendances :** 010, 011 · **Jalon :** M2
@@ -330,7 +330,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] Une regex invalide produit une erreur explicite sans erreur serveur.
 - [ ] Les résultats concordent avec la méthode de référence choisie.
 
-### DAAR-013 — Créer le formulaire de recherche et les résultats
+### DAAR-013 : Créer le formulaire de recherche et les résultats
 
 **Epic :** Interface · **Responsable :** P2 · **Priorité :** P1 · **Estimation :** 5 points  
 **Statut :** À faire · **Dépendances :** 009, 003 · **Jalon :** M2
@@ -348,7 +348,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] Un changement de requête ne laisse pas apparaître les anciens résultats.
 - [ ] Le tri PageRank n’est proposé comme disponible que lorsque les scores existent.
 
-### DAAR-014 — Construire les similarités de Jaccard
+### DAAR-014 : Construire les similarités de Jaccard
 
 **Epic :** Graphe · **Responsable :** P2 · **Priorité :** P1 · **Estimation :** 5 points  
 **Statut :** À faire · **Dépendances :** 006, 003 · **Jalon :** M3
@@ -367,7 +367,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] Les scores sont symétriques et compris entre 0 et 1.
 - [ ] Le graphe est reproductible pour un même corpus et les mêmes paramètres.
 
-### DAAR-015 — Calculer et vérifier PageRank
+### DAAR-015 : Calculer et vérifier PageRank
 
 **Epic :** Graphe · **Responsable :** P2 · **Priorité :** P1 · **Estimation :** 5 points  
 **Statut :** À faire · **Dépendances :** 014 · **Jalon :** M3
@@ -385,7 +385,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] Un petit graphe connu produit un résultat cohérent avec une référence.
 - [ ] L’absence de convergence est signalée ; tous les livres ont un score défini.
 
-### DAAR-016 — Créer la route de livres similaires
+### DAAR-016 : Créer la route de livres similaires
 
 **Epic :** Recommandation · **Responsable :** P2 · **Priorité :** P1 · **Estimation :** 3 points  
 **Statut :** À faire · **Dépendances :** 008, 014 · **Jalon :** M3
@@ -403,7 +403,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] similarity est fourni et l’ordre est stable.
 - [ ] Livre inconnu et livre sans voisin sont correctement traités.
 
-### DAAR-017 — Ajouter les scores et le tri PageRank
+### DAAR-017 : Ajouter les scores et le tri PageRank
 
 **Epic :** Intégration · **Responsable :** P1 · **Priorité :** P1 · **Estimation :** 3 points  
 **Statut :** À faire · **Dépendances :** 011, 012, 015 · **Jalon :** M3
@@ -421,7 +421,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] Les scores API correspondent aux scores calculés.
 - [ ] Des fichiers incompatibles ou manquants donnent un diagnostic exploitable.
 
-### DAAR-018 — Afficher les recommandations et terminer l’intégration
+### DAAR-018 : Afficher les recommandations et terminer l’intégration
 
 **Epic :** Interface · **Responsable :** P2 · **Priorité :** P1 · **Estimation :** 3 points  
 **Statut :** À faire · **Dépendances :** 013, 016, 017 · **Jalon :** M3
@@ -439,7 +439,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] Les états sans recommandation et les erreurs ne bloquent pas la navigation.
 - [ ] Les classements affichés correspondent aux réponses API.
 
-### DAAR-019 — Passer au corpus complet
+### DAAR-019 : Passer au corpus complet
 
 **Epic :** Corpus · **Responsable :** P1 · **Priorité :** P1 · **Estimation :** 5 points  
 **Statut :** À faire · **Dépendances :** 007, 010, 014, 015, 018 · **Jalon :** M4
@@ -457,7 +457,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] Manifeste, base, index et scores référencent les mêmes livres.
 - [ ] Le corpus reste accessible après arrêt et redémarrage des conteneurs.
 
-### DAAR-020 — Vérifier l’exactitude et mesurer les performances
+### DAAR-020 : Vérifier l’exactitude et mesurer les performances
 
 **Epic :** Qualité · **Responsable :** P1 · **Priorité :** P2 · **Estimation :** 5 points  
 **Statut :** À faire · **Dépendances :** 019, 017 · **Jalon :** M5
@@ -475,7 +475,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] Les mesures sont répétées et leurs conditions sont reproductibles.
 - [ ] Les limites et erreurs constatées sont consignées sans conclusions excessives.
 
-### DAAR-021 — Évaluer la pertinence et produire les graphiques
+### DAAR-021 : Évaluer la pertinence et produire les graphiques
 
 **Epic :** Qualité · **Responsable :** P2 · **Priorité :** P2 · **Estimation :** 5 points  
 **Statut :** À faire · **Dépendances :** 019, 018, 020 · **Jalon :** M5
@@ -493,7 +493,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] Les graphiques indiquent unités, corpus et conditions.
 - [ ] Les conclusions distinguent qualité de recherche, popularité dans le graphe et vitesse.
 
-### DAAR-022 — Documenter le backend et la reproduction du corpus
+### DAAR-022 : Documenter le backend et la reproduction du corpus
 
 **Epic :** Livraison · **Responsable :** P1 · **Priorité :** P2 · **Estimation :** 3 points  
 **Statut :** À faire · **Dépendances :** 020 · **Jalon :** M5
@@ -511,7 +511,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] Les dépendances et paramètres nécessaires sont listés.
 - [ ] Les chiffres du rapport correspondent aux résultats enregistrés.
 
-### DAAR-023 — Finaliser rapport, archive et démonstration
+### DAAR-023 : Finaliser rapport, archive et démonstration
 
 **Epic :** Livraison · **Responsable :** P2 · **Priorité :** P2 · **Estimation :** 3 points  
 **Statut :** À faire · **Dépendances :** 021, 022 · **Jalon :** M5
@@ -529,7 +529,7 @@ M1 doit être validé avant d’augmenter le corpus. P2 peut développer l’int
 - [ ] L’archive contient tous les éléments requis ou leur méthode de récupération.
 - [ ] Les deux personnes savent présenter et reproduire le parcours de démonstration.
 
-## Contrat technique proposé — à valider dans DAAR-003
+## Contrat technique proposé : à valider dans DAAR-003
 
 ### Stockage
 

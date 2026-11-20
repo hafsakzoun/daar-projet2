@@ -11,6 +11,8 @@ from app.services.install_corpus import clean_title
         ("Astounding Stories,  August, 1931", "Astounding Stories, August, 1931"),
         ("Moby-Dick; or, The Whale", "Moby-Dick; or, The Whale"),
         ("  Le Prix : 5 $  ", "Le Prix : 5 $"),
+        ("Democracy in America \u2014 Volume 1", "Democracy in America, Volume 1"),
+        ("Tender Buttons: Objects\u2014Food\u2014Rooms", "Tender Buttons: Objects, Food, Rooms"),
     ],
 )
 def test_clean_title(raw, expected):

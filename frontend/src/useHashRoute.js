@@ -34,5 +34,11 @@ export function useHashRoute() {
 }
 
 export function navigate(path) {
-  window.location.hash = path;
+  // Si l'adresse est déjà la bonne (ex. jeton retiré avec replaceState),
+  // le navigateur n'émet pas « hashchange » : on le déclenche nous-mêmes.
+  if (window.location.hash === `#${path}`) {
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+  } else {
+    window.location.hash = path;
+  }
 }

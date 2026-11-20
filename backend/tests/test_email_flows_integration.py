@@ -63,8 +63,10 @@ def test_signup_requires_email_confirmation(mailbox):
         assert http.post("/api/v1/auth/email/verify", json={"token": token}).status_code == 200
         assert login(http).status_code == 200
 
-        # Le lien ne sert qu'une fois.
-        assert http.post("/api/v1/auth/email/verify", json={"token": token}).status_code == 400
+        # Lien recliqué après confirmation : pas d'erreur, message « déjà confirmée ».
+        again = http.post("/api/v1/auth/email/verify", json={"token": token})
+        assert again.status_code == 200
+        assert "déjà confirmée" in again.json()["detail"]
 
 
 def test_resend_confirmation_replaces_old_link(mailbox):
