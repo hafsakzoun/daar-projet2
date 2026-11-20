@@ -126,11 +126,16 @@ deploy_aws:
   stage: deploy
   image: alpine:3.20
   needs: [build_backend_image, build_frontend_image, compose_config]
+  # Un seul déploiement à la fois, même si plusieurs commits arrivent.
+  resource_group: production
   environment:
     name: production
     url: https://13.61.8.67/
   rules:
-    # Manuel, et seulement si l'accès SSH au serveur est configuré.
+    # Un clic sur ▶ dans le pipeline de main, dès que l'accès SSH au
+    # serveur est configuré (EC2_HOST, EC2_SSH_KEY, EC2_KNOWN_HOSTS :
+    # docs/CI_CD.md). Remplacer « manual » par « on_success » pour un
+    # déploiement entièrement automatique à chaque commit.
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $EC2_HOST && $EC2_SSH_KEY
       when: manual
   variables:
@@ -140,16 +145,26 @@ deploy_aws:
     - apk add --no-cache openssh-client
     - chmod 600 "$EC2_SSH_KEY"
     - mkdir -p ~/.ssh && printf '%s\n' "$EC2_KNOWN_HOSTS" > ~/.ssh/known_hosts
-  script:
     - export SSH_TARGET="$EC2_USER@$EC2_HOST"
-    # Fichiers Compose du dépôt (compose.ec2.yaml reste propre au serveur).
+  script:
+    # Fichiers Compose et nginx du dépôt (compose.ec2.yaml reste propre au serveur).
+    - ssh -i "$EC2_SSH_KEY" "$SSH_TARGET" "mkdir -p $DEPLOY_DIR/frontend $DEPLOY_DIR/secrets"
     - scp -i "$EC2_SSH_KEY" compose.yaml compose.aws.yaml compose.https.yaml "$SSH_TARGET:$DEPLOY_DIR/"
     - scp -i "$EC2_SSH_KEY" frontend/nginx.https.conf "$SSH_TARGET:$DEPLOY_DIR/frontend/"
-    - ssh -i "$EC2_SSH_KEY" "$SSH_TARGET" "mkdir -p $DEPLOY_DIR/secrets"
     - scp -i "$EC2_SSH_KEY" secrets/README.md secrets/db_password.dev secrets/smtp_password.dev "$SSH_TARGET:$DEPLOY_DIR/secrets/"
-    # Le jeton du job permet au serveur de lire le registre GitLab.
+    # Mot de passe SMTP (variable masquée SMTP_PASSWORD) : écrit dans un
+    # fichier secret du serveur, transmis par l'entrée standard (jamais
+    # dans une ligne de commande ni dans les logs).
+    - |
+      if [ -n "${SMTP_PASSWORD:-}" ]; then
+        printf '%s' "$SMTP_PASSWORD" | ssh -i "$EC2_SSH_KEY" "$SSH_TARGET" \
+          "umask 077; cat > $DEPLOY_DIR/secrets/smtp_password.txt && chmod 644 $DEPLOY_DIR/secrets/smtp_password.txt"
+      fi
+    # Jeton éphémère du job : le serveur peut lire le registre GitLab.
     - printf '%s' "$CI_JOB_TOKEN" | ssh -i "$EC2_SSH_KEY" "$SSH_TARGET"
         "sudo docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY"
     - ssh -i "$EC2_SSH_KEY" "$SSH_TARGET"
-        "DEPLOY_DIR=$DEPLOY_DIR BACKEND_IMAGE=$BACKEND_IMAGE:$CI_COMMIT_SHORT_SHA FRONTEND_IMAGE=$FRONTEND_IMAGE:$CI_COMMIT_SHORT_SHA bash -s"
-        < scripts/deploy_ec2.sh
+        "DEPLOY_DIR=$DEPLOY_DIR REGISTRY=$CI_REGISTRY
+        BACKEND_IMAGE=$BACKEND_IMAGE:$CI_COMMIT_SHORT_SHA FRONTEND_IMAGE=$FRONTEND_IMAGE:$CI_COMMIT_SHORT_SHA
+        APP_URL=${APP_URL:-} SMTP_HOST=${SMTP_HOST:-} SMTP_PORT=${SMTP_PORT:-} SMTP_USER=${SMTP_USER:-} MAIL_FROM=${MAIL_FROM:-}
+        bash -s" < scripts/deploy_ec2.sh

@@ -20,6 +20,18 @@ compose_config     (Compose)       │                          │
 Les tests d'intégration ne tournent que sur une base nommée `daar_test` avec
 `DAAR_TEST_DB=1` : la base de production ne peut jamais être réinitialisée.
 
+## Mettre à jour AWS en une commande (depuis un poste)
+
+```bash
+scripts/update_aws.sh
+```
+
+La clé `.pem` est trouvée automatiquement (ou se passe en argument). Le script
+envoie le code du dernier commit, sauvegarde l'ancien dossier du serveur,
+prépare les secrets Docker (base, e-mail depuis `secrets/smtp_password.txt`),
+reconstruit les images sur le serveur, vérifie l'API à travers nginx et remet
+la version précédente en place si la nouvelle ne répond pas.
+
 ## Déploiement continu vers AWS
 
 Le job `deploy_aws` :
@@ -33,9 +45,11 @@ Le job `deploy_aws` :
 Les volumes (base, corpus) et le certificat HTTPS ne sont pas modifiés. Le
 fichier `compose.ec2.yaml`, propre au serveur, est conservé.
 
-Le job est **manuel** : on clique sur ▶ dans le pipeline de `main` quand on
-veut mettre la démonstration à jour. Il n'apparaît que si les variables
-ci-dessous sont définies.
+Le job se déclenche d'un clic sur ▶ dans le pipeline de `main`. Il n'apparaît
+que si les variables ci-dessous sont définies, et le groupe de sécurité EC2
+doit accepter SSH (port 22) depuis les machines de GitLab. Pour un déploiement
+sans clic à chaque commit, remplacer `when: manual` par `when: on_success`.
+Si la nouvelle version ne répond pas, la précédente est remise en place.
 
 ### Variables à définir
 
@@ -47,8 +61,9 @@ GitLab → *Settings → CI/CD → Variables* (cocher *Protect* et *Mask* quand 
 | `EC2_SSH_KEY` | **File** | contenu de la clé privée `.pem` de l'instance |
 | `EC2_KNOWN_HOSTS` | Variable | sortie de `ssh-keyscan 13.61.8.67` |
 
-Facultatif : `EC2_USER` (défaut `admin`) et `DEPLOY_DIR`
-(défaut `/home/admin/daar-release-3ae4534`).
+Facultatif : `EC2_USER` (défaut `admin`), `DEPLOY_DIR`
+(défaut `/home/admin/daar-release-3ae4534`) et, pour les e-mails, `SMTP_PASSWORD`
+(**masquée**), `SMTP_HOST`, `SMTP_USER`, `MAIL_FROM`, `APP_URL`.
 
 Le registre de conteneurs doit être activé sur le projet
 (*Settings → General → Visibility → Container registry*).
