@@ -14,6 +14,7 @@ function parse(hash) {
   if (path === "/reinitialiser") return { name: "reset", token: params.get("jeton") ?? "" };
   if (path === "/favoris") return { name: "favorites" };
   if (path === "/historique") return { name: "history" };
+  if (path === "/compte") return { name: "account" };
   return { name: "search" };
 }
 

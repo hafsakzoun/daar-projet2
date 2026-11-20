@@ -1600,3 +1600,51 @@ a.book-cover:focus-visible { transform: translateY(-3px); }
 .page--narrow .auth-form {
   margin-top: 0;
 }
+
+/* Champ mot de passe avec bouton afficher / masquer */
+.password-field {
+  position: relative;
+  display: block;
+}
+
+.auth-form .password-field input {
+  padding-right: 44px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--faint);
+  transform: translateY(-50%);
+}
+
+.password-toggle:hover,
+.password-toggle[aria-pressed="true"] {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.auth-form input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.auth-form small.field-error {
+  color: var(--danger);
+}
+
+.section-title {
+  margin: 0 0 14px;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+}

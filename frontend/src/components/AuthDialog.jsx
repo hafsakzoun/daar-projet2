@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { postAuth } from "../api/auth.js";
+import PasswordInput from "./PasswordInput.jsx";
 
 const TITLES = {
   login: "Se connecter",
@@ -13,6 +14,10 @@ function AuthDialog({ initialMode, onClose, onLogin }) {
   const [notice, setNotice] = useState(null);
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState(false);
+  // Inscription : mot de passe et confirmation, comparés pendant la saisie.
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const mismatch = mode === "signup" && confirm !== "" && confirm !== password;
   // Connexion refusée car l'adresse n'est pas encore confirmée.
   const [unverified, setUnverified] = useState(false);
 
@@ -28,6 +33,8 @@ function AuthDialog({ initialMode, onClose, onLogin }) {
     setMode(nextMode);
     setNotice(null);
     setUnverified(false);
+    setPassword("");
+    setConfirm("");
   }
 
   async function run(path, payload) {
@@ -64,10 +71,14 @@ function AuthDialog({ initialMode, onClose, onLogin }) {
         setNotice({ type: "error", text: "Renseigne ton prénom." });
         return;
       }
+      if (password !== confirm) {
+        setNotice({ type: "error", text: "Les deux mots de passe ne sont pas identiques." });
+        return;
+      }
 
       const result = await run("signup", {
         email: address,
-        password: fields.get("password"),
+        password,
         first_name: firstName,
       });
       if (!result.ok) {
@@ -76,6 +87,8 @@ function AuthDialog({ initialMode, onClose, onLogin }) {
       }
 
       setMode("login");
+      setPassword("");
+      setConfirm("");
       setNotice({
         type: "success",
         text: result.body?.verification_required
@@ -183,23 +196,46 @@ function AuthDialog({ initialMode, onClose, onLogin }) {
           />
         </label>
 
-        {mode !== "forgot" && (
-          <label>
-            Mot de passe
-            <input
+        {mode === "login" && (
+          <PasswordInput
+            label="Mot de passe"
+            name="password"
+            autoComplete="current-password"
+            maxLength={128}
+            readOnly={pending}
+            required
+          />
+        )}
+
+        {mode === "signup" && (
+          <>
+            <PasswordInput
+              label="Mot de passe"
               name="password"
-              type="password"
-              autoComplete={mode === "signup" ? "new-password" : "current-password"}
-              minLength={mode === "signup" ? 12 : undefined}
+              autoComplete="new-password"
+              minLength={12}
               maxLength={128}
-              aria-describedby={mode === "signup" ? "password-hint" : undefined}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              hint="Au moins 12 caractères."
               readOnly={pending}
               required
             />
-          </label>
+            <PasswordInput
+              label="Confirmer le mot de passe"
+              name="confirm"
+              autoComplete="new-password"
+              minLength={12}
+              maxLength={128}
+              value={confirm}
+              onChange={(event) => setConfirm(event.target.value)}
+              invalid={mismatch}
+              hint={mismatch ? "Les mots de passe ne correspondent pas." : undefined}
+              readOnly={pending}
+              required
+            />
+          </>
         )}
-
-        {mode === "signup" && <small id="password-hint">Au moins 12 caractères.</small>}
 
         {mode === "login" && (
           <button
@@ -215,7 +251,7 @@ function AuthDialog({ initialMode, onClose, onLogin }) {
         <button
           type="submit"
           className="btn btn--primary btn--block"
-          disabled={pending}
+          disabled={pending || mismatch}
         >
           {pending
             ? "Patiente…"

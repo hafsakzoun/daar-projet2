@@ -16,7 +16,7 @@ from app.core.config import settings
 from app.db.models import AuthSession, AuthToken, Book, Favorite, SearchHistory, User
 from app.db.session import get_db
 from app.services import rate_limit
-from app.services.emails import reset_email, verification_email
+from app.services.emails import password_changed_email, reset_email, verification_email
 from app.services.mailer import send_mail
 
 
@@ -75,6 +75,11 @@ class ResetInput(TokenInput):
 
 class Message(BaseModel):
     detail: str
+
+
+class PasswordChangeInput(BaseModel):
+    current_password: SecretStr = Field(min_length=1, max_length=128)
+    new_password: Password
 
 
 _auth_schema_ready = False
@@ -355,7 +360,9 @@ def forgot_password(
     response_model=Message,
     dependencies=[Depends(check_origin)],
 )
-def reset_password(payload: ResetInput, request: Request, db: DbSession) -> Message:
+def reset_password(
+    payload: ResetInput, request: Request, background: BackgroundTasks, db: DbSession
+) -> Message:
     rate_limit.check(f"reset-ip:{rate_limit.client_ip(request)}", limit=10, window_seconds=900)
     ensure_auth_schema(db)
 
@@ -366,6 +373,7 @@ def reset_password(payload: ResetInput, request: Request, db: DbSession) -> Mess
     # Déconnecte toutes les sessions ouvertes avec l'ancien mot de passe.
     db.execute(delete(AuthSession).where(AuthSession.user_id == user.id))
     db.commit()
+    background.add_task(send_mail, user.email, *password_changed_email(user.first_name))
     return Message(detail="Ton mot de passe a été changé. Tu peux te connecter.")
 
 
@@ -395,6 +403,39 @@ CurrentUser = Annotated[User, Depends(current_user)]
 def me(user: CurrentUser, response: Response) -> PublicUser:
     response.headers["Cache-Control"] = "no-store"
     return public_user(user)
+
+
+@router.post(
+    "/password/change",
+    response_model=Message,
+    dependencies=[Depends(check_origin)],
+)
+def change_password(
+    payload: PasswordChangeInput,
+    request: Request,
+    background: BackgroundTasks,
+    user: CurrentUser,
+    db: DbSession,
+) -> Message:
+    """Changement de mot de passe une fois connecté (ancien mot de passe exigé)."""
+    rate_limit.check(f"change:{user.id}", limit=5, window_seconds=600)
+
+    if not password_hasher.verify(payload.current_password.get_secret_value(), user.password_hash):
+        raise HTTPException(status_code=400, detail="Le mot de passe actuel est incorrect.")
+
+    new_password = payload.new_password.get_secret_value()
+    if password_hasher.verify(new_password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Choisis un mot de passe différent de l'actuel.")
+
+    user.password_hash = password_hasher.hash(new_password)
+    # Ferme les autres sessions ; celle en cours reste ouverte.
+    current = hash_token(request.cookies.get(COOKIE_NAME, ""))
+    db.execute(delete(AuthSession).where(
+        AuthSession.user_id == user.id, AuthSession.token_hash != current
+    ))
+    db.commit()
+    background.add_task(send_mail, user.email, *password_changed_email(user.first_name))
+    return Message(detail="Ton mot de passe a été modifié. Un e-mail de confirmation t'a été envoyé.")
 
 
 @router.post("/logout", status_code=204, dependencies=[Depends(check_origin)])

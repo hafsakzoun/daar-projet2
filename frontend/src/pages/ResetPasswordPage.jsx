@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { postAuth } from "../api/auth.js";
+import PasswordInput from "../components/PasswordInput.jsx";
 
 export default function ResetPasswordPage({ token, onLogin }) {
   const [notice, setNotice] = useState(null);
@@ -32,14 +33,8 @@ export default function ResetPasswordPage({ token, onLogin }) {
 
       {!done && (
         <form className="auth-form" onSubmit={submit}>
-          <label>
-            Nouveau mot de passe
-            <input name="password" type="password" autoComplete="new-password" minLength={12} maxLength={128} required readOnly={pending} />
-          </label>
-          <label>
-            Confirmation
-            <input name="confirm" type="password" autoComplete="new-password" minLength={12} maxLength={128} required readOnly={pending} />
-          </label>
+          <PasswordInput label="Nouveau mot de passe" name="password" autoComplete="new-password" minLength={12} maxLength={128} hint="Au moins 12 caractères." required readOnly={pending} />
+          <PasswordInput label="Confirmer le mot de passe" name="confirm" autoComplete="new-password" minLength={12} maxLength={128} required readOnly={pending} />
           <button type="submit" className="btn btn--primary btn--block" disabled={pending}>
             {pending ? "Patiente…" : "Enregistrer"}
           </button>

@@ -129,3 +129,60 @@ def test_login_is_rate_limited(mailbox):
         codes = [login(http, email="cible@example.org", password="mauvais").status_code for _ in range(10)]
         assert codes[:8] == [401] * 8
         assert codes[8:] == [429, 429]
+
+
+def verified_account(http, mailbox):
+    signup(http)
+    http.post("/api/v1/auth/email/verify", json={"token": link_token(mailbox[-1][2])})
+
+
+def test_reset_sends_password_changed_alert(mailbox):
+    with TestClient(app) as http:
+        verified_account(http, mailbox)
+        http.post("/api/v1/auth/password/forgot", json={"email": "lecteur@example.org"})
+        token = link_token(mailbox[-1][2])
+        http.post("/api/v1/auth/password/reset", json={"token": token, "password": NEW_PASSWORD})
+
+        to, subject, _ = mailbox[-1]
+        assert to == "lecteur@example.org"
+        assert "modifié" in subject
+
+
+def test_change_password_when_logged_in(mailbox):
+    with TestClient(app) as http:
+        verified_account(http, mailbox)
+
+        # Il faut être connecté.
+        anonymous = http.post(
+            "/api/v1/auth/password/change",
+            json={"current_password": PASSWORD, "new_password": NEW_PASSWORD},
+        )
+        assert anonymous.status_code == 401
+
+        assert login(http).status_code == 200
+
+        wrong = http.post(
+            "/api/v1/auth/password/change",
+            json={"current_password": "pas-le-bon-mot-de-passe", "new_password": NEW_PASSWORD},
+        )
+        assert wrong.status_code == 400
+
+        same = http.post(
+            "/api/v1/auth/password/change",
+            json={"current_password": PASSWORD, "new_password": PASSWORD},
+        )
+        assert same.status_code == 400
+
+        ok = http.post(
+            "/api/v1/auth/password/change",
+            json={"current_password": PASSWORD, "new_password": NEW_PASSWORD},
+        )
+        assert ok.status_code == 200
+        # La session en cours reste ouverte.
+        assert http.get("/api/v1/auth/me").status_code == 200
+        # Un e-mail d'alerte est envoyé.
+        assert "modifié" in mailbox[-1][1]
+
+    with TestClient(app) as other:
+        assert login(other).status_code == 401
+        assert login(other, password=NEW_PASSWORD).status_code == 200

@@ -38,3 +38,13 @@ def reset_email(first_name: str, token: str) -> tuple[str, str, str]:
     outro = "Ce lien est valable 1 heure et ne peut servir qu'une fois. Si tu n'es pas à l'origine de cette demande, ignore cet e-mail : ton mot de passe actuel reste valable."
     text = f"{intro}\n\n{link}\n\n{outro}\n"
     return subject, text, _layout("Nouveau mot de passe", intro, "Choisir un nouveau mot de passe", link, outro)
+
+
+def password_changed_email(first_name: str) -> tuple[str, str, str]:
+    """Alerte envoyée après chaque changement de mot de passe."""
+    link = f"{settings.app_url}/#/"
+    subject = "Ton mot de passe a été modifié — Lisière"
+    intro = f"Bonjour {first_name}, le mot de passe de ton compte Lisière vient d'être modifié. Toutes les autres sessions ont été déconnectées."
+    outro = "Si tu n'es pas à l'origine de ce changement, utilise immédiatement « Mot de passe oublié » sur le site pour reprendre la main sur ton compte."
+    text = f"{intro}\n\n{outro}\n\n{link}\n"
+    return subject, text, _layout("Mot de passe modifié", intro, "Aller sur Lisière", link, outro)

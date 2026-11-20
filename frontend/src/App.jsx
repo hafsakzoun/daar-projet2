@@ -5,6 +5,7 @@ import SignInRequired from "./components/SignInRequired.jsx";
 import useReadingActivity from "./hooks/useReadingActivity.js";
 import BookReader from "./pages/BookReader.jsx";
 import FavoritesPage from "./pages/FavoritesPage.jsx";
+import AccountPage from "./pages/AccountPage.jsx";
 import HistoryPage from "./pages/HistoryPage.jsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
 import VerifyEmailPage from "./pages/VerifyEmailPage.jsx";
@@ -97,7 +98,7 @@ function App() {
       if (!response.ok) throw new Error("Déconnexion impossible");
 
       setUser(null);
-      if (route.name === "favorites" || route.name === "history") navigate("/");
+      if (["favorites", "history", "account"].includes(route.name)) navigate("/");
     } catch {
       setAccountError("Impossible de te déconnecter. Réessaie.");
     } finally {
@@ -186,6 +187,14 @@ function App() {
                   Bienvenue, {user.first_name} !
                 </span>
 
+                <a
+                  className="btn btn--ghost"
+                  href="#/compte"
+                  aria-current={route.name === "account" ? "page" : undefined}
+                >
+                  Mon compte
+                </a>
+
                 <button
                   type="button"
                   className="btn btn--ghost"
@@ -242,6 +251,12 @@ function App() {
             onReplay={replaySearch}
             onClear={clearHistory}
           />
+        ) : (
+          <SignInRequired onLogin={() => setAuthMode("login")} checking={checkingSession} />
+        ))}
+
+        {route.name === "account" && (user ? (
+          <AccountPage user={user} />
         ) : (
           <SignInRequired onLogin={() => setAuthMode("login")} checking={checkingSession} />
         ))}
