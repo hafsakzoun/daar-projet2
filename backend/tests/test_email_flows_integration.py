@@ -188,3 +188,44 @@ def test_change_password_when_logged_in(mailbox):
     with TestClient(app) as other:
         assert login(other).status_code == 401
         assert login(other, password=NEW_PASSWORD).status_code == 200
+
+
+def test_delete_account(mailbox, monkeypatch):
+    from sqlalchemy import func, select
+
+    from app.db.models import AuthToken, Favorite, SearchHistory, User
+    from app.db.session import SessionLocal
+
+    with TestClient(app) as http:
+        verified_account(http, mailbox)
+        assert login(http).status_code == 200
+        http.put("/api/v1/auth/me/favorites/11")
+        http.post("/api/v1/auth/me/history", json={"query": "alice", "mode": "keyword"})
+
+        # Mot de passe exigé.
+        wrong = http.post("/api/v1/auth/me/delete", json={"password": "pas-le-bon"})
+        assert wrong.status_code == 400
+
+        ok = http.post("/api/v1/auth/me/delete", json={"password": PASSWORD})
+        assert ok.status_code == 204
+        assert "supprimé" in mailbox[-1][1]
+
+        # Déconnecté, et le compte n'existe plus.
+        assert http.get("/api/v1/auth/me").status_code == 401
+        assert login(http).status_code == 401
+
+    with SessionLocal() as db:
+        assert db.scalar(select(func.count()).select_from(User).where(User.email == "lecteur@example.org")) == 0
+        # Données liées supprimées en cascade.
+        assert db.scalar(select(func.count()).select_from(Favorite)) == 0
+        assert db.scalar(select(func.count()).select_from(SearchHistory)) == 0
+        assert db.scalar(select(func.count()).select_from(AuthToken)) == 0
+
+    # L'adresse est de nouveau libre.
+    with TestClient(app) as http:
+        assert signup(http).status_code == 201
+
+
+def test_delete_account_requires_login(mailbox):
+    with TestClient(app) as http:
+        assert http.post("/api/v1/auth/me/delete", json={"password": PASSWORD}).status_code == 401

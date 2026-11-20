@@ -41,6 +41,7 @@ function App() {
   const [checkingSession, setCheckingSession] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
   const [accountError, setAccountError] = useState("");
+  const [accountNotice, setAccountNotice] = useState("");
   const route = useHashRoute();
 
   // Un lien d'e-mail ouvert dans l'onglet ferme la fenêtre de connexion,
@@ -89,6 +90,7 @@ function App() {
   }, []);
 
   function handleLogin(profile) {
+    setAccountNotice("");
     setUser(profile);
     setAuthMode(null);
     setAccountError("");
@@ -240,6 +242,11 @@ function App() {
       <main className="library">
         {storageError && <p role="alert">{storageError}</p>}
         {accountError && <p role="alert">{accountError}</p>}
+        {accountNotice && (
+          <p className="auth-notice auth-notice--success page-notice" role="status">
+            {accountNotice}
+          </p>
+        )}
 
         {authMode && (
           <AuthDialog
@@ -266,7 +273,14 @@ function App() {
         ))}
 
         {route.name === "account" && (user ? (
-          <AccountPage user={user} />
+          <AccountPage
+            user={user}
+            onDeleted={() => {
+              setUser(null);
+              setAccountNotice("Ton compte a été supprimé. Un e-mail de confirmation t’a été envoyé.");
+              navigate("/");
+            }}
+          />
         ) : (
           <SignInRequired onLogin={() => setAuthMode("login")} checking={checkingSession} />
         ))}

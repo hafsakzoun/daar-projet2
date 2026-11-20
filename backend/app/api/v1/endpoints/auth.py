@@ -16,7 +16,12 @@ from app.core.config import settings
 from app.db.models import AuthSession, AuthToken, Book, Favorite, SearchHistory, User
 from app.db.session import get_db
 from app.services import rate_limit
-from app.services.emails import password_changed_email, reset_email, verification_email
+from app.services.emails import (
+    account_deleted_email,
+    password_changed_email,
+    reset_email,
+    verification_email,
+)
 from app.services.mailer import send_mail
 
 
@@ -75,6 +80,10 @@ class ResetInput(TokenInput):
 
 class Message(BaseModel):
     detail: str
+
+
+class AccountDeleteInput(BaseModel):
+    password: SecretStr = Field(min_length=1, max_length=128)
 
 
 class PasswordChangeInput(BaseModel):
@@ -448,6 +457,45 @@ def change_password(
     db.commit()
     background.add_task(send_mail, user.email, *password_changed_email(user.first_name))
     return Message(detail="Ton mot de passe a été modifié. Un e-mail de confirmation t'a été envoyé.")
+
+
+@router.post(
+    "/me/delete",
+    status_code=204,
+    dependencies=[Depends(check_origin)],
+)
+def delete_account(
+    payload: AccountDeleteInput,
+    background: BackgroundTasks,
+    user: CurrentUser,
+    db: DbSession,
+) -> Response:
+    """Supprime le compte et toutes ses données (favoris, historique,
+    sessions, liens e-mail : suppression en cascade dans PostgreSQL).
+
+    Le mot de passe est redemandé : un ordinateur resté connecté ne suffit pas.
+    """
+    rate_limit.check(f"delete:{user.id}", limit=5, window_seconds=600)
+
+    if not password_hasher.verify(payload.password.get_secret_value(), user.password_hash):
+        raise HTTPException(status_code=400, detail="Mot de passe incorrect.")
+
+    email, first_name = user.email, user.first_name
+    db.delete(user)
+    db.commit()
+    background.add_task(send_mail, email, *account_deleted_email(first_name))
+
+    response = Response(status_code=204, headers={"Cache-Control": "no-store"})
+    response.delete_cookie(
+        key=COOKIE_NAME,
+        path="/api/v1/auth",
+        httponly=True,
+        secure=COOKIE_SECURE,
+        samesite="strict",
+    )
+    # Les tâches de fond sont attachées à la réponse renvoyée.
+    response.background = background
+    return response
 
 
 @router.post("/logout", status_code=204, dependencies=[Depends(check_origin)])

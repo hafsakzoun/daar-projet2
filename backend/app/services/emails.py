@@ -48,3 +48,13 @@ def password_changed_email(first_name: str) -> tuple[str, str, str]:
     outro = "Si tu n'es pas à l'origine de ce changement, utilise immédiatement « Mot de passe oublié » sur le site pour reprendre la main sur ton compte."
     text = f"{intro}\n\n{outro}\n\n{link}\n"
     return subject, text, _layout("Mot de passe modifié", intro, "Aller sur Lisière", link, outro)
+
+
+def account_deleted_email(first_name: str) -> tuple[str, str, str]:
+    """Confirmation envoyée après la suppression d'un compte."""
+    link = f"{settings.app_url}/#/"
+    subject = "Ton compte a été supprimé | Lisière"
+    intro = f"Bonjour {first_name}, ton compte Lisière a bien été supprimé, avec tes favoris et ton historique de recherche."
+    outro = "Si tu n'es pas à l'origine de cette suppression, réponds à cet e-mail. Tu peux créer un nouveau compte à tout moment."
+    text = f"{intro}\n\n{outro}\n\n{link}\n"
+    return subject, text, _layout("Compte supprimé", intro, "Aller sur Lisière", link, outro)

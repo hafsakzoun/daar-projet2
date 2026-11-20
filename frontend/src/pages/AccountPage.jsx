@@ -3,7 +3,64 @@ import { postAuth } from "../api/auth.js";
 import PasswordInput from "../components/PasswordInput.jsx";
 
 // Page « Mon compte » : informations et changement du mot de passe.
-export default function AccountPage({ user }) {
+function DeleteAccount({ onDeleted }) {
+  const [open, setOpen] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState("");
+
+  async function submit(event) {
+    event.preventDefault();
+    const password = new FormData(event.currentTarget).get("password");
+    setPending(true);
+    setError("");
+    const result = await postAuth("me/delete", { password });
+    setPending(false);
+    if (result.ok) onDeleted();
+    else setError(result.message);
+  }
+
+  return (
+    <section className="danger-zone" aria-labelledby="delete-title">
+      <h2 id="delete-title" className="section-title">Supprimer mon compte</h2>
+      <p>
+        Ton compte, tes favoris et ton historique de recherche seront
+        définitivement effacés. Cette action est irréversible.
+      </p>
+
+      {!open ? (
+        <button type="button" className="btn btn--danger" onClick={() => setOpen(true)}>
+          Supprimer mon compte
+        </button>
+      ) : (
+        <form className="auth-form" onSubmit={submit}>
+          <PasswordInput
+            label="Confirme avec ton mot de passe"
+            name="password"
+            autoComplete="current-password"
+            maxLength={128}
+            required
+            readOnly={pending}
+          />
+          <div className="danger-actions">
+            <button type="submit" className="btn btn--danger" disabled={pending}>
+              {pending ? "Suppression…" : "Supprimer définitivement"}
+            </button>
+            <button type="button" className="btn btn--ghost" onClick={() => setOpen(false)} disabled={pending}>
+              Annuler
+            </button>
+          </div>
+          {error && (
+            <p className="auth-notice auth-notice--error" role="alert">
+              {error}
+            </p>
+          )}
+        </form>
+      )}
+    </section>
+  );
+}
+
+export default function AccountPage({ user, onDeleted }) {
   const [notice, setNotice] = useState(null);
   const [pending, setPending] = useState(false);
   const [password, setPassword] = useState("");
@@ -80,6 +137,8 @@ export default function AccountPage({ user }) {
           {notice.text}
         </p>
       )}
+
+      <DeleteAccount onDeleted={onDeleted} />
     </section>
   );
 }
