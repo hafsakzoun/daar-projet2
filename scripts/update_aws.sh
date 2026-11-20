@@ -47,7 +47,7 @@ git archive --format=tar.gz -o "$ARCHIVE" HEAD
 "${SCP[@]}" "$ARCHIVE" "$USER_NAME@$HOST:/tmp/lisiere-$SHA.tar.gz"
 # Sauvegarde du dossier (fichiers seulement, pas les données) avant d'écraser.
 "${SSH[@]}" "set -e; mkdir -p '$DEPLOY_DIR';
-  cp -a '$DEPLOY_DIR' '$DEPLOY_DIR.avant-$SHA';
+  [ -e '$DEPLOY_DIR.avant-$SHA' ] || cp -a '$DEPLOY_DIR' '$DEPLOY_DIR.avant-$SHA';
   cd '$DEPLOY_DIR';
   tar -xzf /tmp/lisiere-$SHA.tar.gz; rm -f /tmp/lisiere-$SHA.tar.gz;
   mkdir -p secrets; chmod 700 secrets"
@@ -62,10 +62,12 @@ fi
 env_value() { sed -n "s/^$1=//p" .env 2>/dev/null | tail -1; }
 
 # 3. Construction, redémarrage, vérification (et retour arrière si besoin)
-"${SSH[@]}" "DEPLOY_DIR='$DEPLOY_DIR' BUILD=1
-  BACKEND_IMAGE='lisiere-backend:$SHA' FRONTEND_IMAGE='lisiere-frontend:$SHA'
-  APP_URL='https://$HOST' SMTP_HOST='$(env_value SMTP_HOST)' SMTP_PORT='$(env_value SMTP_PORT)'
-  SMTP_USER='$(env_value SMTP_USER)' MAIL_FROM='$(env_value MAIL_FROM)'
-  bash -s" < scripts/deploy_ec2.sh
+# Une seule ligne : le shell distant ne transmettrait pas des variables
+# écrites sur plusieurs lignes au « bash -s » qui suit.
+REMOTE_ENV="DEPLOY_DIR='$DEPLOY_DIR' BUILD=1"
+REMOTE_ENV="$REMOTE_ENV BACKEND_IMAGE='lisiere-backend:$SHA' FRONTEND_IMAGE='lisiere-frontend:$SHA'"
+REMOTE_ENV="$REMOTE_ENV APP_URL='https://$HOST' SMTP_HOST='$(env_value SMTP_HOST)' SMTP_PORT='$(env_value SMTP_PORT)'"
+REMOTE_ENV="$REMOTE_ENV SMTP_USER='$(env_value SMTP_USER)' MAIL_FROM='$(env_value MAIL_FROM)'"
+"${SSH[@]}" "$REMOTE_ENV bash -s" < scripts/deploy_ec2.sh
 
 echo "Terminé : https://$HOST/"
