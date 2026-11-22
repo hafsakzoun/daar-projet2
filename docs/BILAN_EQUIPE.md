@@ -27,7 +27,7 @@ principale du projet » : la dernière colonne est à compléter par l'équipe.
 | Interface React | 7 | 10 | première interface, recherche, fenêtre des recommandations (Hafsa) ; refonte visuelle, pages, lecture (Oum) | |
 | Docker, Compose, AWS, HTTPS, CI/CD | 20 | 4 | Docker initial (Hafsa) ; chaîne d'initialisation, nginx, déploiement AWS + HTTPS, pipeline GitLab (Oum) | |
 | Tests automatisés | 15 | 3 | tests du graphe (Hafsa) ; tests unitaires et d'intégration (Oum) | |
-| Benchmarks, pertinence, documentation | 20 | 3 | `PERFORMANCES_V2.md`, `PERTINENCE.md`, README (Oum) | |
+| Benchmarks, pertinence, documentation | 20 | 3 | `PERFORMANCES.md`, `PERTINENCE.md`, README (Oum) | |
 | Rapport | | | | |
 | Vidéo de présentation | | | | |
 

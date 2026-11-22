@@ -56,7 +56,7 @@ par Docker Compose. Les mots de passe passent par des secrets Docker
 | Donnée | Stockage |
 |---|---|
 | Textes des livres | volume Docker `corpus` |
-| Index inversé | PostgreSQL : `terms_v2`, `postings_v2` |
+| Index inversé | PostgreSQL : table des termes et table des occurrences |
 | Graphe et PageRank | PostgreSQL : `book_similarities`, `book_scores` |
 | Comptes, favoris, historique | PostgreSQL : `users`, `user_favorites`, `search_history` |
 
@@ -65,7 +65,7 @@ par Docker Compose. Les mots de passe passent par des secrets Docker
 | Sujet | Fichier |
 |---|---|
 | Tests et validation | [docs/VALIDATION.md](docs/VALIDATION.md) |
-| Performances | [docs/PERFORMANCES_V2.md](docs/PERFORMANCES_V2.md) |
+| Performances | [docs/PERFORMANCES.md](docs/PERFORMANCES.md) |
 | Pertinence du classement | [docs/PERTINENCE.md](docs/PERTINENCE.md) |
 | Sécurité | [docs/SECURITE.md](docs/SECURITE.md) |
 | CI/CD GitLab | [docs/CI_CD.md](docs/CI_CD.md) |
