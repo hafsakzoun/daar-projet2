@@ -75,5 +75,5 @@ docker compose run --rm -T --no-deps backend python -m pytest tests/ -v
 ```
 
 Cette commande lance les tests unitaires ; les tests d'intégration sont
-ignorés hors base de test. Pour les lancer aussi, voir la section Tests du
-[README](../README.md).
+ignorés hors base de test. Pour les lancer aussi, voir
+[VALIDATION.md](VALIDATION.md).
