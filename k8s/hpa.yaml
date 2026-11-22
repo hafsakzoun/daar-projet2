@@ -18,3 +18,8 @@ spec:
         target:
           type: Utilization
           averageUtilization: 70
+  # Le chargement du vocabulaire au démarrage fait monter le CPU quelques
+  # dizaines de secondes : on n'ajoute une réplique que si la charge dure.
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 120

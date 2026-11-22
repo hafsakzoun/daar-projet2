@@ -30,3 +30,6 @@ data/generated/
 /secrets/*
 !/secrets/*.dev
 !/secrets/README.md
+
+# Captures pour le rapport (hors dépôt et hors archive)
+/rapport/

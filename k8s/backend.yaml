@@ -53,13 +53,23 @@ spec:
               valueFrom: {secretKeyRef: {name: lisiere-smtp, key: SMTP_PASSWORD, optional: true}}
           ports:
             - containerPort: 8000
+          # Au démarrage, le pod charge les 973 252 racines du vocabulaire RegEx
+          # et répond lentement : la sonde de démarrage lui laisse 5 minutes
+          # avant que la sonde de vie ne puisse le redémarrer.
+          startupProbe:
+            httpGet: {path: /api/v1/health, port: 8000}
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
           readinessProbe:
             httpGet: {path: /api/v1/health, port: 8000}
             periodSeconds: 10
+            timeoutSeconds: 5
           livenessProbe:
             httpGet: {path: /api/v1/health, port: 8000}
-            initialDelaySeconds: 20
             periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
           resources:
             requests: {cpu: 100m, memory: 200Mi}
             limits: {memory: 512Mi}
