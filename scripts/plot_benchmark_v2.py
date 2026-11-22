@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 from xml.sax.saxutils import escape
 
-# Palette categorielle validee (daltonisme) - ordre fixe.
+# Couleurs des courbes, toujours dans le meme ordre.
 SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"]
 INK, MUTED, GRID, SURFACE = "#0b0b0b", "#52514e", "#e4e3df", "#ffffff"
 FONT = "font-family='Helvetica, Arial, sans-serif'"

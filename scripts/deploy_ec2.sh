@@ -25,7 +25,7 @@ if [ -f compose.ec2.yaml ] && grep -qE '^[[:space:]]*(POSTGRES_PASSWORD|DB_PASSW
   exit 1
 fi
 
-# ── 1. Secret de la base ──────────────────────────────────────────────
+# 1. Secret de la base
 # Reprend le mot de passe de l'ancien .env (base déjà initialisée avec).
 if ! grep -q '^DB_PASSWORD_SECRET=' .env; then
   mkdir -p secrets && chmod 700 secrets
@@ -42,7 +42,7 @@ if ! grep -q '^DB_PASSWORD_SECRET=' .env; then
   echo "Secret de la base créé dans $DEPLOY_DIR/secrets/."
 fi
 
-# ── 2. Configuration e-mail (valeurs non secrètes, fournies par la CI) ─
+# 2. Configuration e-mail (valeurs non secrètes, fournies par la CI)
 set_env() {
   local name=$1 value=$2
   [ -n "$value" ] || return 0
@@ -58,7 +58,7 @@ if [ -s secrets/smtp_password.txt ]; then
   set_env SMTP_PASSWORD_SECRET ./secrets/smtp_password.txt
 fi
 
-# ── 3. Nouvelles images ───────────────────────────────────────────────
+# 3. Nouvelles images
 compose() {
   sudo BACKEND_IMAGE="$1" FRONTEND_IMAGE="$2" docker compose -p daar \
     -f compose.yaml -f compose.aws.yaml -f compose.ec2.yaml -f compose.https.yaml \
@@ -88,7 +88,7 @@ fi
 # si le corpus, l'index et le graphe sont déjà en place.
 compose "$BACKEND_IMAGE" "$FRONTEND_IMAGE" up -d --no-build backend frontend
 
-# ── 4. Vérification, et retour arrière si besoin ──────────────────────
+# 4. Vérification, et retour arrière si besoin
 healthy() {
   for _ in $(seq 1 30); do
     if curl -fsk https://127.0.0.1/api/v1/health > /dev/null 2>&1; then

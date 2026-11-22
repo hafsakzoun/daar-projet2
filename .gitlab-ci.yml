@@ -18,7 +18,7 @@ variables:
   BACKEND_IMAGE: "$CI_REGISTRY_IMAGE/backend"
   FRONTEND_IMAGE: "$CI_REGISTRY_IMAGE/frontend"
 
-# ─────────────────────────── test ───────────────────────────
+# test
 
 backend_tests:
   stage: test
@@ -90,7 +90,7 @@ k8s_manifests:
     - kubectl kustomize k8s > k8s-rendered.yaml
     - /kubeconform -strict -summary k8s-rendered.yaml
 
-# ─────────────────────────── build ───────────────────────────
+# build
 
 .docker:
   image: docker:27
@@ -120,7 +120,7 @@ build_frontend_image:
     - docker build -t "$FRONTEND_IMAGE:$CI_COMMIT_SHORT_SHA" -t "$FRONTEND_IMAGE:latest" frontend
     - docker push --all-tags "$FRONTEND_IMAGE"
 
-# ─────────────────────────── deploy ───────────────────────────
+# deploy
 
 deploy_aws:
   stage: deploy

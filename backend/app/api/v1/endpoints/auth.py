@@ -516,7 +516,7 @@ def logout(request: Request, db: DbSession) -> Response:
     return response
 
 
-# ───────────── Favoris et historique (stockés en base) ─────────────
+# Favoris et historique (stockés en base)
 # Ces routes sont sous /auth/me car le cookie de session
 # n'est envoyé que sur le chemin /api/v1/auth.
 

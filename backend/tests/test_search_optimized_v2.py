@@ -100,7 +100,7 @@ def test_v2_ready_detects_complete_index(indexed_v2, monkeypatch):
         assert v2_ready(db)
 
 
-# ───────── Tri PageRank en SQL ─────────
+# Tri PageRank en SQL
 
 def test_pagerank_unavailable_without_scores(indexed_v2):
     from app.services.search_optimized import PageRankUnavailable
@@ -130,7 +130,7 @@ def test_pagerank_sort_and_pagination(indexed_v2):
     assert [b["id"] for b in second["results"]] == [11]
 
 
-# ───────── RegEx par automate (vocabulaire en memoire) ─────────
+# RegEx par automate (vocabulaire en memoire)
 
 def test_regex_automate_uses_prefix_and_vocabulary(indexed_v2):
     from app.services import regex_automate_search_v2 as regex
@@ -151,7 +151,7 @@ def test_regex_automate_uses_prefix_and_vocabulary(indexed_v2):
     assert nothing["total"] == 0
 
 
-# ───────── Suggestions : voisins dans le graphe de Jaccard ─────────
+# Suggestions : voisins dans le graphe de Jaccard
 
 def test_recommendations_come_from_graph_table(indexed_v2):
     from fastapi.testclient import TestClient
